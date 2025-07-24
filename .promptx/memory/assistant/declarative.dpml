@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<memory>
+  <item id="mem_1753356200567_259a5dax3" time="2025/07/24 19:23">
+    <content>
+      用户询问Parcel构建工具的作用和功能，需要详细解释Parcel在WebUI项目中的具体作用
+    </content>
+    <tags>#工具使用</tags>
+  </item>
+  <item id="mem_1753367011280_rvsod5ddc" time="2025/07/24 22:23">
+    <content>
+      用户要求对ColorOS墓碑配置编辑器项目进行彻底review，不进行修改。项目是基于KernelSU模块的WebUI工具，用于编辑ColorOS系统墓碑配置文件。技术栈包括HTML5、CSS3、ES6+ JavaScript，采用模块化架构设计。
+    </content>
+    <tags>#工具使用</tags>
+  </item>
+</memory>

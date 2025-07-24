@@ -1,0 +1,6 @@
+id=coloros_tombstone_editor
+name=ColorOS墓碑配置编辑器
+version=v1.0.0
+versionCode=1
+author=酷安@ItosEO
+description=ColorOS墓碑配置编辑器 - 支持XML解析和文件读写的WebUI工具

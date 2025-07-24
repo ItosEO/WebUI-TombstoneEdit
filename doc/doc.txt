@@ -1,0 +1,161 @@
+Color os墓碑配置文件
+路径:/data/oplus/os/bpm/sys_elsa_config_list.xml
+感谢@sky丶路人
+配置文件参数解析
+①基础开关
+<enableConfig
+hansEnable="true" <!-- 启用全局墓碑机制 -->
+gmsEnable="true" <!-- 对Google移动服务(GMS)应用启用优化 -->
+releaseStatistic="true" <!-- 收集并释放统计信息 -->
+skipToast="true" <!-- 冻结时跳过Toast通知避免唤醒 -->
+heatGameCloseNet="false"; <!-- 高温时是否关闭游戏网络（默认关闭） -->
+dozeRestrictSwitch="true" <!-- 在Doze模式下启用限制开关 -->
+audioByHook="true" <!-- 通过钩子拦截音频事件减少唤醒 -->
+navigationByHook="true" <!-- 通过钩子拦截导航事件减少唤醒 -->
+audioCheckEnable="true" <!-- 启用音频状态检查 -->
+proxyWakeLockEnable="true" <!-- 启用WakeLock代理机制 -->
+cgp_v2="true" <!-- 使用第二代CGP(可能是某种功耗策略) -->
+hansWatchDogEnable="true" <!-- 启用墓碑看门狗监控 -->
+cpnCheckByHook="true" <!-- 通过钩子检查组件(Component)状态 -->
+restoreAlarm="true" <!-- 解冻时恢复闹钟功能 -->
+uidGoneRemoveAlarm="true" <!-- 应用卸载时移除关联闹钟 -->
+MStateTrimMemConfig="true" <!-- 对M状态应用启用内存压缩 -->
+/>
+②屏幕状态策略
+<!-- 熄屏配置 -->
+<lcdOffConfig
+ffTotal="6" <!-- 每次冻结的最大应用数 -->
+ffInterval="10000" <!-- 冻结尝试间隔(10秒) -->
+interval="60000" <!-- 常规检查间隔(60秒) -->
+deepSleepFreezeWhite="true" <!-- 深度睡眠时冻结白名单应用 -->
+gameCloseNet="false" <!-- 熄屏时是否关闭游戏网络 -->
+idleEnable="true" <!-- 启用空闲状态检测 -->
+/>
+
+<!-- 亮屏配置 -->
+<lcdOnConfig
+RToM="20000" <!-- Recent→M进程冻结延迟(20秒) -->
+MToF="10000" <!-- M→Frozen进程冻结延迟(10秒) -->
+checkImportance="15000" <!-- 重要性检查间隔(15秒) -->
+gameCloseNet="false" <!-- 亮屏时是否关闭游戏网络 -->
+/>
+③进程冻结规则
+<!-- 快速冻结配置 -->
+<ffConfig
+enable="true" <!-- 启用快速冻结 -->
+enterTimeout="100" <!-- 进入冻结状态超时(100ms) -->
+interval="10000" <!-- 冻结周期(10秒) -->
+maxFzNum="10" <!-- 单批次最大冻结数 -->
+/>
+
+<!-- 应用特定冻结超时 -->
+<ffTimeout
+pkg="com.oppo.camera"
+ffTimeout="3000" <!-- 相机应用冻结超时延长至3秒 -->
+hotEnable="true" <!-- 高温环境下仍启用冻结 -->
+skipImptFlag="6000" <!-- 跳过重要性检查的阈值(6秒) -->
+/>
+④功耗代理机制
+<!-- 广播代理 -->
+<proxyConfig
+alarm="true" <!-- 代理Alarm广播 -->
+service="true" <!-- 代理Service广播 -->
+job="true" <!-- 代理JobScheduler事件 -->
+broadcast="true" <!-- 代理常规广播 -->
+proxyBCmax="60" <!-- 最大代理广播数 -->
+/>
+
+<!-- WakeLock代理 -->
+<proxyWL>
+<wakelock
+type="proxy"
+tag="*job.deadline*" <!-- 代理包含"job.deadline"标签的WakeLock -->
+pkg="*" <!-- 适用于所有应用 -->
+proxy="4" <!-- 代理级别(4=限制性代理) -->
+enable="true" <!-- 启用此规则 -->
+/>
+</proxyWL>
+
+<!-- GPS代理 -->
+<proxyGps>
+<item
+type="white"
+appType="11" <!-- 导航类应用(11)加入白名单 -->
+recentUse="5" <!-- 最近使用5分钟内不代理 -->
+stillInterval="10" <!-- 静止状态代理间隔(10分钟) -->
+/>
+</proxyGps>
+⑤内存优化
+<superFreezeConfig enable="true">
+<trimMemUFZConfig
+enable="true" <!-- 启用内存压缩 -->
+number="5" <!-- 每次压缩5个进程 -->
+/>
+<minOomAdj value="500"/> <!-- 最小OOM_ADJ值(低于此值不压缩) -->
+<activityStopDelay delay="1000"/> <!-- Activity停止延迟(1秒) -->
+<minMemorySupport capacity="16"/> <!-- 最小内存支持(16GB设备生效) -->
+</superFreezeConfig>
+⑥CPU管控
+<cpuCtlRus
+shortCommCpuRateCtl="50" <!-- 短期通信CPU使用率阈值(50%) -->
+longCommCpuRateCtl="2.5" <!-- 长期通信CPU使用率阈值(2.5%) -->
+shortSysCpuRateCtl="200" <!-- 短期系统CPU使用率阈值(200% * 核心数) -->
+collectCpuInfoCycle="120000" <!-- CPU信息收集周期(120秒) -->
+cpuCollectEnable="false" <!-- 是否启用CPU收集 -->
+/>
+⑦特殊场景规则
+<!-- 游戏网络限制 -->
+<restrictNet>
+<item
+name="appType"
+value="4" <!-- 应用类型4=游戏 -->
+delayTime="60000" <!-- 限制延迟(60秒) -->
+/>
+</restrictNet>
+
+<!-- 高温模式 -->
+<thermalMode
+enable="true"
+enterLevel="10" <!-- 10级温度进入限流 -->
+exitLevel="9" <!-- 9级温度退出限流 -->
+>
+<!-- <whitePkg name="com.test.demo"/> --> <!-- 高温白名单示例 -->
+</thermalMode>
+⑧关键数据结构
+<!-- 应用类型定义 -->
+<appType>
+<type name="app_game" value="4"/> <!-- 游戏应用 -->
+<type name="app_im" value="7"/> <!-- 即时通讯应用 -->
+<type name="app_navigation" value="11"/> <!-- 导航应用 -->
+<!-- 共45种应用类型 -->
+</appType>
+
+<!-- 代理广播默认列表 -->
+<defaultProxyBc>
+<item>android.intent.action.TIME_TICK</item> <!-- 系统时间广播 -->
+<item>android.net.conn.CONNECTIVITY_CHANGE</item> <!-- 网络切换广播 -->
+<!-- 共40+种系统广播 -->
+</defaultProxyBc>
+****
+*[受虐滑稽]*
+****
+以下为例子
+****
+*[受虐滑稽]*
+****
+微信保活
+<whitePkg name="com.tencent.mm" category="001"/> <!-- 加入第三方白名单 -->
+<manageAlarm type="white" pkg="com.tencent.mm"/> <!-- 闹钟白名单 -->
+<freezeInterval appType="7" RToM="6000" MToF="5000"/> <!-- IM类放宽冻结阈值 -->
+<cpnBroadcast calling="false" type="white" pkg="com.tencent.mm"
+action="android.net.conn.CONNECTIVITY_CHANGE"
+scene="all"/> <!-- 允许接收网络变化广播 -->
+游戏策略(注重性能平衡)
+<package name="com.tencent.tmgp.pubgmhd">
+<appType type="4"/> <!-- 标记为游戏类型 -->
+</package>
+<freezeInterval appType="4" RToM="5000" MToF="2000"/> <!-- 专用冻结策略 -->
+<skipFrames enable="true" duration="30000" count="20"/> <!-- 30秒内允许跳20帧 -->
+<restrictNetForBrand>
+<item brand="OnePlus" name="appType" value="4" delayTime="300000"/> <!-- 一加设备延迟5分钟断网 -->
+</restrictNetForBrand>
