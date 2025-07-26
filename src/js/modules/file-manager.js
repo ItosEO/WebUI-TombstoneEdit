@@ -4,6 +4,7 @@
  */
 
 import { exec } from 'kernelsu';
+import { log } from './logger.js';
 
 export class FileManager {
     constructor() {
@@ -27,9 +28,9 @@ export class FileManager {
             // 设置目录权限
             await exec(`chmod 755 "${this.tempDir}"`);
 
-            console.log('目录初始化完成');
+            await log.info('目录初始化完成');
         } catch (error) {
-            console.warn('目录初始化警告:', error.message);
+            await log.warn('目录初始化警告:', error.message);
         }
     }
 
@@ -43,7 +44,7 @@ export class FileManager {
             const result = await exec('echo "test"');
             return result.errno === 0;
         } catch (error) {
-            console.error('KernelSU API检查失败:', error);
+            await log.error('KernelSU API检查失败:', error);
             return false;
         }
     }
@@ -84,11 +85,11 @@ export class FileManager {
                 throw new Error('配置文件为空');
             }
 
-            console.log('配置文件读取成功');
+            await log.info('配置文件读取成功');
             return result.stdout;
 
         } catch (error) {
-            console.error('读取配置文件失败:', error);
+            await log.error('读取配置文件失败:', error);
             throw new Error(`读取配置文件失败: ${error.message}`);
         }
     }
@@ -132,10 +133,10 @@ export class FileManager {
             // 清理临时文件
             await exec(`rm -f "${tempFile}"`);
 
-            console.log('配置文件写入成功');
+            await log.info('配置文件写入成功');
 
         } catch (error) {
-            console.error('写入配置文件失败:', error);
+            await log.error('写入配置文件失败:', error);
             throw new Error(`写入配置文件失败: ${error.message}`);
         }
     }
@@ -161,11 +162,11 @@ export class FileManager {
             // 设置备份文件权限
             await exec(`chmod 644 "${this.backupPath}"`);
 
-            console.log(`备份创建成功: ${this.backupPath}`);
+            await log.info(`备份创建成功: ${this.backupPath}`);
             return this.backupPath;
 
         } catch (error) {
-            console.error('创建备份失败:', error);
+            await log.error('创建备份失败:', error);
             throw new Error(`创建备份失败: ${error.message}`);
         }
     }
@@ -213,7 +214,7 @@ export class FileManager {
             };
 
         } catch (error) {
-            console.error('获取备份信息失败:', error);
+            await log.error('获取备份信息失败:', error);
             return null;
         }
     }
@@ -245,10 +246,10 @@ export class FileManager {
             await exec(`chmod 644 "${this.configPath}"`);
             await exec(`chown system:system "${this.configPath}"`);
 
-            console.log(`配置文件已恢复: ${this.backupPath}`);
+            await log.info(`配置文件已恢复: ${this.backupPath}`);
 
         } catch (error) {
-            console.error('恢复备份失败:', error);
+            await log.error('恢复备份失败:', error);
             throw new Error(`恢复备份失败: ${error.message}`);
         }
     }
@@ -260,15 +261,15 @@ export class FileManager {
         try {
             const exists = await this.checkBackupExists();
             if (!exists) {
-                console.log('备份文件不存在，无需删除');
+                await log.info('备份文件不存在，无需删除');
                 return;
             }
 
             await exec(`rm -f "${this.backupPath}"`);
-            console.log('备份文件已删除');
+            await log.info('备份文件已删除');
 
         } catch (error) {
-            console.warn('删除备份文件时出现警告:', error.message);
+            await log.warn('删除备份文件时出现警告:', error.message);
         }
     }
 
@@ -301,7 +302,7 @@ export class FileManager {
             };
 
         } catch (error) {
-            console.error('获取文件信息失败:', error);
+            await log.error('获取文件信息失败:', error);
             return null;
         }
     }
@@ -330,7 +331,7 @@ export class FileManager {
             return true;
 
         } catch (error) {
-            console.error('文件完整性验证失败:', error);
+            await log.error('文件完整性验证失败:', error);
             return false;
         }
     }

@@ -3,6 +3,8 @@
  * 负责显示各种类型的模态对话框
  */
 
+import { log } from './logger.js';
+
 export class ModalManager {
     constructor() {
         this.overlay = null;
@@ -20,9 +22,19 @@ export class ModalManager {
     initializeModal() {
         this.overlay = document.getElementById('modal-overlay');
         this.modal = this.overlay?.querySelector('.modal');
-        
+
+        log.debug('ModalManager初始化', {
+            hasOverlay: !!this.overlay,
+            hasModal: !!this.modal,
+            overlayId: this.overlay?.id,
+            modalClass: this.modal?.className
+        });
+
         if (!this.overlay || !this.modal) {
-            console.warn('模态对话框元素未找到');
+            log.error('模态对话框元素未找到', {
+                overlayExists: !!document.getElementById('modal-overlay'),
+                modalExists: !!document.querySelector('.modal')
+            });
         }
     }
 
@@ -80,14 +92,19 @@ export class ModalManager {
      * @returns {Promise<boolean>} 用户选择结果
      */
     showConfirm(title, message, confirmText = '确认', type = 'info') {
+        log.debug('ModalManager.showConfirm调用', { title, message, confirmText, type, isOpen: this.isOpen });
+
         return new Promise((resolve) => {
             if (this.isOpen) {
+                log.warn('模态对话框已经打开，拒绝新的请求');
                 resolve(false);
                 return;
             }
 
             this.currentResolve = resolve;
+            log.debug('开始更新对话框内容');
             this.updateContent(title, message, confirmText, type);
+            log.debug('开始打开对话框');
             this.open();
         });
     }
@@ -122,6 +139,7 @@ export class ModalManager {
      * @returns {Promise<boolean>} 用户选择结果
      */
     showDanger(title, message, confirmText = '删除') {
+        log.debug('ModalManager.showDanger调用', { title, message, confirmText });
         return this.showConfirm(title, message, confirmText, 'danger');
     }
 
@@ -215,10 +233,21 @@ export class ModalManager {
      * 打开对话框
      */
     open() {
-        if (!this.overlay || this.isOpen) return;
+        log.debug('ModalManager.open调用', { hasOverlay: !!this.overlay, isOpen: this.isOpen });
+
+        if (!this.overlay) {
+            log.error('模态对话框overlay元素不存在');
+            return;
+        }
+
+        if (this.isOpen) {
+            log.warn('模态对话框已经打开');
+            return;
+        }
 
         this.isOpen = true;
         this.overlay.classList.remove('hidden');
+        log.info('模态对话框已打开');
         
         // 禁用页面滚动
         document.body.style.overflow = 'hidden';

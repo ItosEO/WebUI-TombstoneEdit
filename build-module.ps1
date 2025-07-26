@@ -57,7 +57,7 @@ $moduleId = ($moduleProp | Select-String '^id=').ToString().Split('=')[1]
 if (-not $moduleId) { $moduleId = "module" }
 
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$outputFileName = "${moduleId}_v${version}_${timestamp}.zip"
+$outputFileName = "${moduleId}_${timestamp}.zip"
 
 # 创建输出目录
 if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir | Out-Null }

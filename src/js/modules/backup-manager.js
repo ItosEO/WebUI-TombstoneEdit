@@ -3,6 +3,8 @@
  * 负责备份文件的管理、展示和操作
  */
 
+import { log } from './logger.js';
+
 export class BackupManager {
     constructor(fileManager, modalManager, toastManager) {
         this.fileManager = fileManager;
@@ -19,10 +21,10 @@ export class BackupManager {
         try {
             this.isLoading = true;
             this.backups = await this.fileManager.getBackupList();
-            console.log(`加载了 ${this.backups.length} 个备份文件`);
+            log.info(`加载了 ${this.backups.length} 个备份文件`);
             return this.backups;
         } catch (error) {
-            console.error('加载备份列表失败:', error);
+            log.error('加载备份列表失败:', error);
             this.toastManager.showError('加载失败', '无法加载备份文件列表');
             return [];
         } finally {
@@ -53,7 +55,7 @@ export class BackupManager {
             
             return backupPath;
         } catch (error) {
-            console.error('创建备份失败:', error);
+            log.error('创建备份失败:', error);
             this.toastManager.showError('备份失败', error.message);
             throw error;
         }
@@ -84,7 +86,7 @@ export class BackupManager {
             
             return true;
         } catch (error) {
-            console.error('恢复备份失败:', error);
+            log.error('恢复备份失败:', error);
             this.toastManager.showError('恢复失败', error.message);
             return false;
         }
@@ -116,7 +118,7 @@ export class BackupManager {
                 await this.fileManager.removeFile(metadataPath);
             } catch (metaError) {
                 // 忽略元数据删除错误
-                console.warn('删除备份元数据失败:', metaError.message);
+                log.warn('删除备份元数据失败:', metaError.message);
             }
             
             // 重新加载备份列表
@@ -127,7 +129,7 @@ export class BackupManager {
             
             return true;
         } catch (error) {
-            console.error('删除备份失败:', error);
+            log.error('删除备份失败:', error);
             this.toastManager.showError('删除失败', error.message);
             return false;
         }
@@ -149,7 +151,7 @@ export class BackupManager {
             
             await this.fileManager.writeFile(metadataPath, metadataContent);
         } catch (error) {
-            console.warn('保存备份元数据失败:', error.message);
+            log.warn('保存备份元数据失败:', error.message);
         }
     }
 
@@ -170,7 +172,7 @@ export class BackupManager {
             const content = await this.fileManager.readFile(metadataPath);
             return JSON.parse(content);
         } catch (error) {
-            console.warn('加载备份元数据失败:', error.message);
+            log.warn('加载备份元数据失败:', error.message);
             return null;
         }
     }
@@ -195,7 +197,7 @@ export class BackupManager {
                 isValid: await this.validateBackup(backupPath)
             };
         } catch (error) {
-            console.error('获取备份信息失败:', error);
+            log.error('获取备份信息失败:', error);
             return null;
         }
     }
@@ -254,7 +256,7 @@ export class BackupManager {
                     
                     deletedCount++;
                 } catch (deleteError) {
-                    console.warn(`删除备份失败: ${backup.path}`, deleteError.message);
+                    log.warn(`删除备份失败: ${backup.path}`, deleteError.message);
                 }
             }
 
@@ -264,7 +266,7 @@ export class BackupManager {
             }
 
         } catch (error) {
-            console.error('清理旧备份失败:', error);
+            log.error('清理旧备份失败:', error);
             this.toastManager.showError('清理失败', error.message);
         }
     }
@@ -287,7 +289,7 @@ export class BackupManager {
             
             return JSON.stringify(backupList, null, 2);
         } catch (error) {
-            console.error('导出备份列表失败:', error);
+            log.error('导出备份列表失败:', error);
             throw error;
         }
     }

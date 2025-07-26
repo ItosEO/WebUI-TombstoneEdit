@@ -11,6 +11,8 @@ import { XMLParser } from './modules/xml-parser.js';
 import { ValidationManager } from './modules/validation-manager.js';
 import { ToastManager } from './modules/toast-manager.js';
 import { ModalManager } from './modules/modal-manager.js';
+import { WhitelistManager } from './modules/whitelist-manager.js';
+import { logger, log } from './modules/logger.js';
 
 /**
  * 应用主类
@@ -31,6 +33,7 @@ class TombstoneEditor {
         this.validationManager = null;
         this.toastManager = null;
         this.modalManager = null;
+        this.whitelistManager = null;
     }
 
     /**
@@ -38,7 +41,7 @@ class TombstoneEditor {
      */
     async initializeModules() {
         try {
-            console.log('开始初始化模块...');
+            await log.info('开始初始化模块...');
 
             // 按顺序初始化模块，确保依赖关系正确
             this.toastManager = new ToastManager();
@@ -48,14 +51,20 @@ class TombstoneEditor {
             this.uiManager = new UIManager();
             this.xmlParser = new XMLParser();
             this.validationManager = new ValidationManager();
+            this.whitelistManager = new WhitelistManager(
+                this.configManager,
+                this.xmlParser,
+                this.toastManager,
+                this.modalManager
+            );
 
             // 等待一个事件循环，确保DOM完全准备好
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            console.log('模块初始化完成');
+            await log.info('模块初始化完成');
 
         } catch (error) {
-            console.error('模块初始化失败:', error);
+            await log.error('模块初始化失败:', error);
             throw new Error(`模块初始化失败: ${error.message}`);
         }
     }
@@ -65,13 +74,13 @@ class TombstoneEditor {
      */
     async initialize() {
         try {
-            console.log('开始初始化 ColorOS 墓碑配置编辑器...');
+            await log.info('开始初始化 ColorOS 墓碑配置编辑器...');
 
             // 首先初始化所有模块
             await this.initializeModules();
 
             // 绑定全局事件
-            this.bindGlobalEvents();
+            await this.bindGlobalEvents();
 
             // 检查运行环境
             await this.checkEnvironment();
@@ -79,17 +88,26 @@ class TombstoneEditor {
             // 初始化UI
             this.uiManager.initializeUI();
 
+            // 设置UI管理器的依赖
+            this.uiManager.setDependencies({
+                whitelistManager: this.whitelistManager,
+                configManager: this.configManager,
+                toastManager: this.toastManager,
+                modalManager: this.modalManager
+            });
+
             // 加载配置文件
             await this.loadConfiguration();
 
             // 标记为已初始化
             this.isInitialized = true;
 
-            console.log('应用初始化完成');
+            await log.info('应用初始化完成');
+            await log.operation('应用启动', { version: '1.0.0', timestamp: new Date().toISOString() });
             this.toastManager.show('应用初始化完成', 'success');
 
         } catch (error) {
-            console.error('应用初始化失败:', error);
+            await log.error('应用初始化失败:', error);
 
             // 安全地显示错误
             this.showInitializationError('初始化失败', error.message);
@@ -107,7 +125,7 @@ class TombstoneEditor {
                 return;
             }
         } catch (e) {
-            console.warn('UIManager不可用，使用备用错误显示');
+            log.warn('UIManager不可用，使用备用错误显示');
         }
 
         // 备用方案：直接操作DOM
@@ -125,7 +143,7 @@ class TombstoneEditor {
             if (loadingElement) loadingElement.classList.add('hidden');
 
         } catch (e) {
-            console.error('无法显示错误信息:', e);
+            log.error('无法显示错误信息:', e);
             alert(`${title}: ${message}`);
         }
     }
@@ -137,10 +155,11 @@ class TombstoneEditor {
         // 检查KernelSU API是否可用
         const apiAvailable = await this.fileManager.checkAPIAvailable();
         if (!apiAvailable) {
+            await log.error('KernelSU API不可用');
             throw new Error('KernelSU API不可用，请确保在KernelSU环境中运行');
         }
 
-        console.log('运行环境检查通过');
+        await log.info('运行环境检查通过');
     }
 
     /**
@@ -157,10 +176,13 @@ class TombstoneEditor {
             // 解析XML
             this.currentConfig = this.xmlParser.parse(xmlContent);
 
+            // 设置到ConfigManager中
+            this.configManager.setCurrentConfig(this.currentConfig);
+
             // 验证配置结构
             const validation = this.xmlParser.validateStructure(this.currentConfig);
             if (!validation.isValid) {
-                console.warn('配置文件结构验证失败:', validation.errors);
+                await log.warn('配置文件结构验证失败:', validation.errors);
                 this.toastManager.show('配置文件结构有问题，但仍可编辑', 'warning');
             }
 
@@ -175,10 +197,11 @@ class TombstoneEditor {
             // 隐藏加载状态
             this.uiManager.hideLoading();
 
-            console.log('配置文件加载完成');
+            await log.info('配置文件加载完成');
+            await log.operation('配置文件加载', { fileSize: fileInfo?.size || 0 });
 
         } catch (error) {
-            console.error('加载配置文件失败:', error);
+            await log.error('加载配置文件失败:', error);
             this.uiManager.hideLoading();
             throw error;
         }
@@ -188,13 +211,14 @@ class TombstoneEditor {
      * 保存配置文件
      */
     async saveConfiguration() {
+        let loadingToastId = null;
         try {
             if (!this.currentConfig) {
                 throw new Error('没有可保存的配置数据');
             }
 
             // 显示保存状态
-            this.toastManager.show('正在保存配置...', 'loading');
+            loadingToastId = this.toastManager.show('正在保存配置...', 'loading');
 
             // 创建备份
             await this.fileManager.createBackup();
@@ -213,11 +237,22 @@ class TombstoneEditor {
             const fileInfo = await this.fileManager.getFileInfo();
             this.updateFileStatus(fileInfo);
 
+            // 移除加载状态
+            if (loadingToastId) {
+                this.toastManager.removeToast(loadingToastId);
+            }
+
             this.toastManager.show('配置保存成功', 'success');
-            console.log('配置文件保存完成');
+            await log.info('配置文件保存完成');
+            await log.operation('配置保存', { hasChanges: this.hasUnsavedChanges });
 
         } catch (error) {
-            console.error('保存配置文件失败:', error);
+            // 移除加载状态
+            if (loadingToastId) {
+                this.toastManager.removeToast(loadingToastId);
+            }
+
+            await log.error('保存配置文件失败:', error);
             this.toastManager.show(`保存失败: ${error.message}`, 'error');
             throw error;
         }
@@ -227,16 +262,29 @@ class TombstoneEditor {
      * 备份配置文件
      */
     async backupConfiguration() {
+        let loadingToastId = null;
         try {
-            this.toastManager.show('正在创建备份...', 'loading');
+            // 显示加载状态
+            loadingToastId = this.toastManager.show('正在创建备份...', 'loading');
 
             const backupPath = await this.fileManager.createBackup();
-            
+
+            // 移除加载状态
+            if (loadingToastId) {
+                this.toastManager.removeToast(loadingToastId);
+            }
+
             this.toastManager.show(`备份创建成功: ${backupPath}`, 'success');
-            console.log('配置备份完成:', backupPath);
+            await log.info('配置备份完成:', backupPath);
+            await log.operation('创建备份', { backupPath });
 
         } catch (error) {
-            console.error('创建备份失败:', error);
+            // 移除加载状态
+            if (loadingToastId) {
+                this.toastManager.removeToast(loadingToastId);
+            }
+
+            await log.error('创建备份失败:', error);
             this.toastManager.show(`备份失败: ${error.message}`, 'error');
         }
     }
@@ -245,6 +293,7 @@ class TombstoneEditor {
      * 恢复配置文件
      */
     async restoreConfiguration() {
+        let loadingToastId = null;
         try {
             // 确认操作
             const confirmed = await this.modalManager.confirm(
@@ -256,7 +305,8 @@ class TombstoneEditor {
                 return;
             }
 
-            this.toastManager.show('正在恢复备份...', 'loading');
+            // 显示加载状态
+            loadingToastId = this.toastManager.show('正在恢复备份...', 'loading');
 
             // 恢复备份
             await this.fileManager.restoreBackup();
@@ -264,11 +314,22 @@ class TombstoneEditor {
             // 重新加载配置
             await this.loadConfiguration();
 
+            // 移除加载状态
+            if (loadingToastId) {
+                this.toastManager.removeToast(loadingToastId);
+            }
+
             this.toastManager.show('备份恢复成功', 'success');
-            console.log('配置恢复完成');
+            await log.info('配置恢复完成');
+            await log.operation('恢复备份');
 
         } catch (error) {
-            console.error('恢复备份失败:', error);
+            // 移除加载状态
+            if (loadingToastId) {
+                this.toastManager.removeToast(loadingToastId);
+            }
+
+            await log.error('恢复备份失败:', error);
             this.toastManager.show(`恢复失败: ${error.message}`, 'error');
         }
     }
@@ -276,10 +337,10 @@ class TombstoneEditor {
     /**
      * 处理配置变更
      */
-    handleConfigChange(path, value) {
+    async handleConfigChange(path, value) {
         try {
             if (!this.currentConfig) {
-                console.warn('配置数据未加载，忽略变更');
+                await log.warn('配置数据未加载，忽略变更');
                 return;
             }
 
@@ -289,8 +350,9 @@ class TombstoneEditor {
                 const section = pathParts[0];
                 const key = pathParts[1];
                 const validation = this.configManager.validateValue(section, key, value);
-                
+
                 if (!validation.isValid) {
+                    await log.warn('配置验证失败:', validation.error);
                     this.toastManager.show(`配置验证失败: ${validation.error}`, 'error');
                     return;
                 }
@@ -303,10 +365,11 @@ class TombstoneEditor {
             this.hasUnsavedChanges = true;
             this.uiManager.updateUnsavedIndicator(true);
 
-            console.log(`配置已更新: ${path} = ${value}`);
+            await log.info(`配置已更新: ${path} = ${value}`);
+            await log.operation('配置变更', { path, value });
 
         } catch (error) {
-            console.error('处理配置变更失败:', error);
+            await log.error('处理配置变更失败:', error);
             this.toastManager.show(`配置更新失败: ${error.message}`, 'error');
         }
     }
@@ -330,11 +393,11 @@ class TombstoneEditor {
     /**
      * 绑定全局事件
      */
-    bindGlobalEvents() {
+    async bindGlobalEvents() {
         // 配置变更事件
-        document.addEventListener('configChange', (event) => {
+        document.addEventListener('configChange', async (event) => {
             const { path, value } = event.detail;
-            this.handleConfigChange(path, value);
+            await this.handleConfigChange(path, value);
         });
 
         // 保存按钮
@@ -367,7 +430,7 @@ class TombstoneEditor {
                 await this.initialize();
 
             } catch (error) {
-                console.error('重试失败:', error);
+                await log.error('重试失败:', error);
                 this.showInitializationError('重试失败', error.message);
             }
         });
@@ -380,7 +443,7 @@ class TombstoneEditor {
             }
         });
 
-        console.log('全局事件绑定完成');
+        await log.info('全局事件绑定完成');
     }
 }
 
@@ -394,17 +457,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         await window.tombstoneEditor.initialize();
         
     } catch (error) {
-        console.error('应用启动失败:', error);
-        
+        log.error('应用启动失败:', error);
+
         // 显示错误信息
         const errorElement = document.getElementById('error-message');
         const errorDetails = document.getElementById('error-details');
-        
+
         if (errorElement && errorDetails) {
             errorDetails.textContent = error.message;
             errorElement.classList.remove('hidden');
         }
-        
+
         // 隐藏加载状态
         const loadingElement = document.getElementById('loading');
         if (loadingElement) {

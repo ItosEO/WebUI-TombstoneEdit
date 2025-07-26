@@ -3,14 +3,33 @@
  * 负责用户界面的渲染、更新和交互处理
  */
 
+import { log } from './logger.js';
+
 export class UIManager {
     constructor() {
         this.currentSection = 'basic';
         this.searchTerm = '';
         this.configData = null;
-        
+
+        // 依赖注入
+        this.whitelistManager = null;
+        this.configManager = null;
+        this.toastManager = null;
+        this.modalManager = null;
+
         // 绑定事件处理器
         this.bindEvents();
+    }
+
+    /**
+     * 设置依赖项
+     * @param {Object} dependencies - 依赖对象
+     */
+    setDependencies(dependencies) {
+        this.whitelistManager = dependencies.whitelistManager;
+        this.configManager = dependencies.configManager;
+        this.toastManager = dependencies.toastManager;
+        this.modalManager = dependencies.modalManager;
     }
 
     /**
@@ -409,11 +428,85 @@ export class UIManager {
     }
 
     renderWhitelistConfig(container) {
-        container.innerHTML = '<div class="config-section"><h2>白名单管理</h2><p>此功能正在开发中...</p></div>';
+        if (!this.whitelistManager) {
+            container.innerHTML = '<div class="config-section"><h2>白名单管理</h2><p>白名单管理器未初始化</p></div>';
+            return;
+        }
+
+        const html = `
+            <div class="config-section">
+                <div class="section-header">
+                    <h2>白名单管理</h2>
+                    <p>管理各种类型的白名单配置，控制应用的特殊权限和行为</p>
+                </div>
+
+                <!-- 列表类型选择 -->
+                <div class="whitelist-controls">
+                    <div class="control-group">
+                        <label for="whitelist-type">列表类型:</label>
+                        <select id="whitelist-type" class="form-control">
+                            <option value="">请选择列表类型</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <button id="add-whitelist-item" class="btn btn-primary" disabled>
+                            <i class="icon-plus"></i> 添加项目
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 列表内容 -->
+                <div id="whitelist-content" class="whitelist-content">
+                    <div class="empty-state">
+                        <p>请选择一个列表类型来查看和管理项目</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+        this.initializeWhitelistControls();
     }
 
     renderBlacklistConfig(container) {
-        container.innerHTML = '<div class="config-section"><h2>黑名单管理</h2><p>此功能正在开发中...</p></div>';
+        if (!this.whitelistManager) {
+            container.innerHTML = '<div class="config-section"><h2>黑名单管理</h2><p>白名单管理器未初始化</p></div>';
+            return;
+        }
+
+        const html = `
+            <div class="config-section">
+                <div class="section-header">
+                    <h2>黑名单管理</h2>
+                    <p>管理各种类型的黑名单配置，控制应用的限制和禁用行为</p>
+                </div>
+
+                <!-- 列表类型选择 -->
+                <div class="blacklist-controls">
+                    <div class="control-group">
+                        <label for="blacklist-type">列表类型:</label>
+                        <select id="blacklist-type" class="form-control">
+                            <option value="">请选择列表类型</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <button id="add-blacklist-item" class="btn btn-primary" disabled>
+                            <i class="icon-plus"></i> 添加项目
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 列表内容 -->
+                <div id="blacklist-content" class="blacklist-content">
+                    <div class="empty-state">
+                        <p>请选择一个列表类型来查看和管理项目</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+        this.initializeBlacklistControls();
     }
 
     /**
@@ -1028,4 +1121,839 @@ export class UIManager {
             modal.remove();
         }
     }
+
+    /**
+     * 初始化白名单控件
+     */
+    initializeWhitelistControls() {
+        this.populateListTypeSelect('whitelist-type', ['whitePkg', 'ffPkg', 'alarm', 'cpnBroadcast', 'cpnService', 'proxyBroadcast', 'proxyWL', 'proxyGps']);
+        this.bindWhitelistEvents();
+    }
+
+    /**
+     * 初始化黑名单控件
+     */
+    initializeBlacklistControls() {
+        this.populateListTypeSelect('blacklist-type', ['SysBlack', 'ffPkg', 'alarm', 'cpnBroadcast', 'cpnService', 'proxyBroadcast', 'proxyWL']);
+        this.bindBlacklistEvents();
+    }
+
+    /**
+     * 填充列表类型选择框
+     * @param {string} selectId - 选择框ID
+     * @param {Array} types - 支持的类型数组
+     */
+    populateListTypeSelect(selectId, types) {
+        const select = document.getElementById(selectId);
+        if (!select || !this.whitelistManager) return;
+
+        // 清空现有选项
+        select.innerHTML = '<option value="">请选择列表类型</option>';
+
+        // 添加支持的类型
+        types.forEach(type => {
+            const config = this.whitelistManager.getListTypeConfig(type);
+            if (config) {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = `${config.name} (${type})`;
+                option.title = config.description;
+                select.appendChild(option);
+            }
+        });
+    }
+
+    /**
+     * 绑定白名单事件
+     */
+    bindWhitelistEvents() {
+        const typeSelect = document.getElementById('whitelist-type');
+        const addBtn = document.getElementById('add-whitelist-item');
+
+        if (typeSelect) {
+            typeSelect.addEventListener('change', (e) => {
+                const selectedType = e.target.value;
+                this.loadWhitelistItems(selectedType);
+
+                // 启用/禁用按钮
+                const hasSelection = selectedType !== '';
+                addBtn.disabled = !hasSelection;
+            });
+        }
+
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                const selectedType = typeSelect.value;
+                if (selectedType) {
+                    this.showAddItemDialog(selectedType, 'whitelist');
+                }
+            });
+        }
+    }
+
+    /**
+     * 绑定黑名单事件
+     */
+    bindBlacklistEvents() {
+        const typeSelect = document.getElementById('blacklist-type');
+        const addBtn = document.getElementById('add-blacklist-item');
+
+        if (typeSelect) {
+            typeSelect.addEventListener('change', (e) => {
+                const selectedType = e.target.value;
+                this.loadBlacklistItems(selectedType);
+
+                // 启用/禁用按钮
+                const hasSelection = selectedType !== '';
+                addBtn.disabled = !hasSelection;
+            });
+        }
+
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                const selectedType = typeSelect.value;
+                if (selectedType) {
+                    this.showAddItemDialog(selectedType, 'blacklist');
+                }
+            });
+        }
+    }
+
+    /**
+     * 加载白名单项目
+     * @param {string} listType - 列表类型
+     */
+    loadWhitelistItems(listType) {
+        if (!listType || !this.whitelistManager) {
+            document.getElementById('whitelist-content').innerHTML = '<div class="empty-state"><p>请选择一个列表类型</p></div>';
+            return;
+        }
+
+        try {
+            const items = this.whitelistManager.getListItems(listType);
+            const config = this.whitelistManager.getListTypeConfig(listType);
+            this.renderListItems('whitelist-content', items, config, listType, 'whitelist');
+        } catch (error) {
+            document.getElementById('whitelist-content').innerHTML = `<div class="error-state"><p>加载失败: ${error.message}</p></div>`;
+        }
+    }
+
+    /**
+     * 加载黑名单项目
+     * @param {string} listType - 列表类型
+     */
+    loadBlacklistItems(listType) {
+        if (!listType || !this.whitelistManager) {
+            document.getElementById('blacklist-content').innerHTML = '<div class="empty-state"><p>请选择一个列表类型</p></div>';
+            return;
+        }
+
+        try {
+            const items = this.whitelistManager.getListItems(listType);
+            const config = this.whitelistManager.getListTypeConfig(listType);
+            this.renderListItems('blacklist-content', items, config, listType, 'blacklist');
+        } catch (error) {
+            document.getElementById('blacklist-content').innerHTML = `<div class="error-state"><p>加载失败: ${error.message}</p></div>`;
+        }
+    }
+
+    /**
+     * 渲染列表项目
+     * @param {string} containerId - 容器ID
+     * @param {Array} items - 项目数组
+     * @param {Object} config - 列表配置
+     * @param {string} listType - 列表类型
+     * @param {string} context - 上下文(whitelist/blacklist)
+     */
+    renderListItems(containerId, items, config, listType, context) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (items.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>暂无${config.name}项目</p>
+                    <p class="text-muted">${config.description}</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = `
+            <div class="list-header">
+                <h3>${config.name}</h3>
+                <p class="text-muted">${config.description}</p>
+                <div class="list-stats">
+                    <span class="badge">${items.length} 个项目</span>
+                </div>
+            </div>
+            <div class="list-table-container">
+                <table class="list-table">
+                    <thead>
+                        <tr>
+        `;
+
+        // 动态生成表头
+        config.attributes.forEach(attr => {
+            html += `<th>${this.getAttributeDisplayName(attr)}</th>`;
+        });
+        html += `<th>操作</th></tr></thead><tbody>`;
+
+        // 生成表格行
+        items.forEach(item => {
+            html += '<tr>';
+            config.attributes.forEach(attr => {
+                const value = item[attr] || '';
+                const displayValue = this.formatAttributeValue(attr, value, config);
+                html += `<td title="${value}">${displayValue}</td>`;
+            });
+
+            html += `
+                <td class="actions">
+                    <button class="btn btn-sm btn-secondary list-edit-btn"
+                            data-list-type="${listType}"
+                            data-item-id="${item.id}"
+                            data-context="${context}"
+                            title="编辑">
+                        编辑
+                    </button>
+                    <button class="btn btn-sm btn-danger list-delete-btn"
+                            data-list-type="${listType}"
+                            data-item-id="${item.id}"
+                            data-context="${context}"
+                            title="删除">
+                        删除
+                    </button>
+                </td>
+            </tr>`;
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+
+        // 绑定操作按钮事件
+        this.bindListActionEvents(containerId);
+    }
+
+    /**
+     * 获取属性显示名称
+     * @param {string} attr - 属性名
+     * @returns {string} 显示名称
+     */
+    getAttributeDisplayName(attr) {
+        const displayNames = {
+            'name': '应用包名',
+            'pkg': '包名',
+            'type': '类型',
+            'category': '分类',
+            'action': '动作',
+            'cpn': '组件',
+            'calling': '调用方向',
+            'scene': '场景',
+            'tag': '标签',
+            'proxy': '代理级别',
+            'enable': '启用状态',
+            'appType': '应用类型',
+            'recentUse': '最近使用',
+            'stillInterval': '静止间隔',
+            'version': '版本',
+            'mask': '掩码'
+        };
+        return displayNames[attr] || attr;
+    }
+
+    /**
+     * 格式化属性值显示
+     * @param {string} attr - 属性名
+     * @param {string} value - 属性值
+     * @param {Object} config - 列表配置
+     * @returns {string} 格式化后的值
+     */
+    formatAttributeValue(attr, value, config) {
+        if (!value) return '-';
+
+        // 处理类型字段
+        if (attr === 'type' && config.types && config.types[value]) {
+            return `<span class="type-badge type-${value}">${config.types[value]}</span>`;
+        }
+
+        // 处理分类字段
+        if (attr === 'category' && config.categories && config.categories[value]) {
+            return `<span class="category-badge">${config.categories[value]}</span>`;
+        }
+
+        // 处理布尔值
+        if (value === 'true' || value === 'false') {
+            return `<span class="bool-badge bool-${value}">${value === 'true' ? '是' : '否'}</span>`;
+        }
+
+        // 处理长文本
+        if (value.length > 30) {
+            return `<span title="${value}">${value.substring(0, 30)}...</span>`;
+        }
+
+        return value;
+    }
+
+    /**
+     * 显示添加项目浮动表单
+     * @param {string} listType - 列表类型
+     * @param {string} context - 上下文
+     */
+    showAddItemDialog(listType, context) {
+        if (!this.whitelistManager) {
+            console.error('WhitelistManager未初始化');
+            return;
+        }
+
+        const config = this.whitelistManager.getListTypeConfig(listType);
+        if (!config) {
+            console.error(`未找到列表类型配置: ${listType}`);
+            return;
+        }
+
+        log.info('显示添加项目的浮动表单', { listType, context, configName: config.name });
+
+        // 移除已存在的浮动表单
+        this.removeFloatingForm();
+
+        const floatingFormHtml = `
+            <div id="floating-add-form" class="floating-form collapsed">
+                <div class="floating-form-header" id="floating-form-header">
+                    <div class="floating-form-title">
+                        <i class="icon-plus"></i>
+                        <span>添加${config.name}项目</span>
+                    </div>
+                    <div class="floating-form-toggle">
+                        <i class="icon-chevron-up"></i>
+                    </div>
+                </div>
+                <div class="floating-form-content">
+                    <form id="floating-add-item-form">
+                        ${this.generateFormFields(config)}
+                    </form>
+                    <div class="floating-form-actions">
+                        <button type="button" class="btn btn-secondary" id="floating-cancel-btn">取消</button>
+                        <button type="button" class="btn btn-primary" id="floating-save-btn" data-list-type="${listType}" data-context="${context}">保存</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', floatingFormHtml);
+
+        // 绑定事件监听器
+        this.bindFloatingFormEvents();
+
+        // 自动展开表单
+        setTimeout(() => {
+            this.toggleFloatingForm();
+        }, 100);
+
+        log.info('浮动表单已创建并显示', { listType, context });
+    }
+
+    /**
+     * 生成表单字段
+     * @param {Object} config - 列表配置
+     * @returns {string} 表单HTML
+     */
+    generateFormFields(config) {
+        let html = '';
+
+        config.attributes.forEach(attr => {
+            const displayName = this.getAttributeDisplayName(attr);
+            const isRequired = ['name', 'pkg', 'type'].includes(attr);
+
+            html += `
+                <div class="form-group">
+                    <label for="field-${attr}">${displayName}${isRequired ? ' *' : ''}:</label>
+            `;
+
+            // 根据属性类型生成不同的输入控件
+            if (attr === 'type' && config.types) {
+                html += `<select id="field-${attr}" class="form-control" ${isRequired ? 'required' : ''}>`;
+                html += '<option value="">请选择类型</option>';
+                Object.entries(config.types).forEach(([key, value]) => {
+                    html += `<option value="${key}">${value}</option>`;
+                });
+                html += '</select>';
+            } else if (attr === 'category' && config.categories) {
+                html += `<select id="field-${attr}" class="form-control" ${isRequired ? 'required' : ''}>`;
+                html += '<option value="">请选择分类</option>';
+                Object.entries(config.categories).forEach(([key, value]) => {
+                    html += `<option value="${key}">${value}</option>`;
+                });
+                html += '</select>';
+            } else if (attr === 'enable' || attr === 'calling') {
+                html += `
+                    <select id="field-${attr}" class="form-control">
+                        <option value="true">是</option>
+                        <option value="false">否</option>
+                    </select>
+                `;
+            } else {
+                html += `<input type="text" id="field-${attr}" class="form-control" ${isRequired ? 'required' : ''} placeholder="请输入${displayName}">`;
+            }
+
+            html += '</div>';
+        });
+
+        return html;
+    }
+
+    /**
+     * 切换浮动表单的展开/收起状态
+     */
+    toggleFloatingForm() {
+        const form = document.getElementById('floating-add-form');
+        if (!form) {
+            console.warn('浮动表单不存在');
+            return;
+        }
+
+        const isCollapsed = form.classList.contains('collapsed');
+        console.log(`切换浮动表单状态: ${isCollapsed ? '展开' : '收起'}`);
+
+        if (isCollapsed) {
+            form.classList.remove('collapsed');
+            form.classList.add('expanded');
+        } else {
+            form.classList.remove('expanded');
+            form.classList.add('collapsed');
+        }
+    }
+
+    /**
+     * 移除浮动表单
+     */
+    removeFloatingForm() {
+        const existingForm = document.getElementById('floating-add-form');
+        if (existingForm) {
+            console.log('移除现有浮动表单');
+            // 移除事件监听器会在DOM元素删除时自动清理
+            existingForm.remove();
+        }
+    }
+
+    /**
+     * 绑定浮动表单事件监听器
+     */
+    bindFloatingFormEvents() {
+        console.log('绑定浮动表单事件监听器');
+
+        // 绑定头部点击事件
+        const header = document.getElementById('floating-form-header');
+        if (header) {
+            header.addEventListener('click', () => {
+                console.log('点击浮动表单头部');
+                this.toggleFloatingForm();
+            });
+        }
+
+        // 绑定取消按钮事件
+        const cancelBtn = document.getElementById('floating-cancel-btn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                console.log('点击取消按钮');
+                this.removeFloatingForm();
+            });
+        }
+
+        // 绑定保存按钮事件
+        const saveBtn = document.getElementById('floating-save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                console.log('点击保存按钮');
+                const listType = saveBtn.getAttribute('data-list-type');
+                const context = saveBtn.getAttribute('data-context');
+                const itemId = saveBtn.getAttribute('data-item-id');
+
+                console.log('保存按钮数据:', { listType, context, itemId });
+
+                if (itemId) {
+                    // 编辑模式
+                    this.saveEditedItemFromFloating(listType, itemId, context);
+                } else {
+                    // 添加模式
+                    this.saveNewItemFromFloating(listType, context);
+                }
+            });
+        }
+
+        console.log('浮动表单事件监听器绑定完成');
+    }
+
+    /**
+     * 绑定列表操作按钮事件
+     * @param {string} containerId - 容器ID
+     */
+    bindListActionEvents(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            log.warn('容器不存在', { containerId });
+            return;
+        }
+
+        log.debug('绑定列表操作事件', { containerId });
+
+        // 移除之前的事件监听器（如果存在）
+        if (container._listActionHandler) {
+            container.removeEventListener('click', container._listActionHandler);
+        }
+
+        // 使用事件委托绑定点击事件
+        const self = this; // 保存this引用
+        const handleListActionClick = (event) => {
+            log.debug('列表操作事件触发', { target: event.target.tagName, className: event.target.className });
+
+            const target = event.target.closest('button');
+            if (!target) {
+                log.debug('未找到按钮元素');
+                return;
+            }
+
+            // 阻止事件冒泡和默认行为
+            event.preventDefault();
+            event.stopPropagation();
+
+            log.debug('找到按钮元素', { tagName: target.tagName, className: target.className });
+
+            const listType = target.getAttribute('data-list-type');
+            const itemId = target.getAttribute('data-item-id');
+            const context = target.getAttribute('data-context');
+
+            log.debug('按钮数据属性', { listType, itemId, context });
+
+            if (!listType || !itemId || !context) {
+                log.warn('按钮缺少必要的数据属性', { listType, itemId, context });
+                return;
+            }
+
+            if (target.classList.contains('list-edit-btn')) {
+                log.info('点击编辑按钮', { listType, itemId, context });
+                self.editListItem(listType, itemId, context);
+            } else if (target.classList.contains('list-delete-btn')) {
+                log.info('点击删除按钮', { listType, itemId, context });
+                self.deleteListItem(listType, itemId, context);
+            } else {
+                log.warn('未识别的按钮类型', { className: target.className });
+            }
+        };
+
+        // 保存事件处理器引用以便后续移除
+        container._listActionHandler = handleListActionClick;
+        container.addEventListener('click', handleListActionClick, true); // 使用捕获阶段
+
+        // 同时绑定到冒泡阶段作为备用
+        container.addEventListener('click', handleListActionClick, false);
+
+        log.info('列表操作事件绑定完成', { containerId });
+
+        // 验证事件绑定是否成功
+        setTimeout(() => {
+            const buttons = container.querySelectorAll('.list-delete-btn, .list-edit-btn');
+            log.debug('验证按钮绑定', {
+                containerId,
+                buttonCount: buttons.length,
+                hasHandler: !!container._listActionHandler
+            });
+        }, 100);
+    }
+
+    /**
+     * 从浮动表单保存新项目
+     * @param {string} listType - 列表类型
+     * @param {string} context - 上下文
+     */
+    async saveNewItemFromFloating(listType, context) {
+        if (!this.whitelistManager) {
+            console.error('WhitelistManager未初始化');
+            return;
+        }
+
+        const config = this.whitelistManager.getListTypeConfig(listType);
+        if (!config) {
+            console.error(`未找到列表类型配置: ${listType}`);
+            return;
+        }
+
+        console.log(`开始保存${config.name}项目`, { listType, context });
+
+        try {
+            // 收集表单数据
+            const itemData = {};
+            config.attributes.forEach(attr => {
+                const field = document.getElementById(`field-${attr}`);
+                if (field) {
+                    itemData[attr] = field.value.trim();
+                }
+            });
+
+            console.log('收集到的表单数据:', itemData);
+
+            // 验证必需字段
+            const requiredFields = ['name', 'pkg', 'type'].filter(field =>
+                config.attributes.includes(field));
+
+            const missingFields = requiredFields.filter(field => !itemData[field]);
+            if (missingFields.length > 0) {
+                const errorMsg = `请填写必需字段: ${missingFields.join(', ')}`;
+                console.warn('表单验证失败:', errorMsg);
+                this.toastManager?.show(errorMsg, 'error');
+                return;
+            }
+
+            // 添加项目
+            console.log('开始添加列表项目...');
+            await this.whitelistManager.addListItem(listType, itemData);
+            console.log('列表项目添加成功');
+
+            // 移除浮动表单
+            this.removeFloatingForm();
+
+            // 刷新列表
+            console.log(`刷新${context}列表`);
+            if (context === 'whitelist') {
+                this.loadWhitelistItems(listType);
+            } else {
+                this.loadBlacklistItems(listType);
+            }
+
+            this.toastManager?.show('项目添加成功', 'success');
+            console.log('项目添加流程完成');
+
+        } catch (error) {
+            console.error('添加项目失败:', error);
+            this.toastManager?.show(`添加失败: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * 保存新项目（兼容旧的模态框方式）
+     * @param {string} listType - 列表类型
+     * @param {string} context - 上下文
+     */
+    async saveNewItem(listType, context) {
+        // 重定向到浮动表单方法
+        return this.saveNewItemFromFloating(listType, context);
+    }
+
+    /**
+     * 编辑列表项目
+     * @param {string} listType - 列表类型
+     * @param {string} itemId - 项目ID
+     * @param {string} context - 上下文
+     */
+    editListItem(listType, itemId, context) {
+        if (!this.whitelistManager) {
+            console.error('WhitelistManager未初始化');
+            return;
+        }
+
+        const items = this.whitelistManager.getListItems(listType);
+        const item = items.find(i => i.id === itemId);
+        const config = this.whitelistManager.getListTypeConfig(listType);
+
+        if (!item || !config) {
+            console.error('未找到要编辑的项目或配置', { listType, itemId, hasItem: !!item, hasConfig: !!config });
+            return;
+        }
+
+        console.log(`显示编辑${config.name}项目的浮动表单`, { listType, itemId, context, item });
+
+        // 移除已存在的浮动表单
+        this.removeFloatingForm();
+
+        const floatingFormHtml = `
+            <div id="floating-add-form" class="floating-form collapsed">
+                <div class="floating-form-header" id="floating-form-header">
+                    <div class="floating-form-title">
+                        <i class="icon-edit"></i>
+                        <span>编辑${config.name}项目</span>
+                    </div>
+                    <div class="floating-form-toggle">
+                        <i class="icon-chevron-up"></i>
+                    </div>
+                </div>
+                <div class="floating-form-content">
+                    <form id="floating-add-item-form">
+                        ${this.generateFormFields(config)}
+                    </form>
+                    <div class="floating-form-actions">
+                        <button type="button" class="btn btn-secondary" id="floating-cancel-btn">取消</button>
+                        <button type="button" class="btn btn-primary" id="floating-save-btn" data-list-type="${listType}" data-item-id="${itemId}" data-context="${context}">保存</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', floatingFormHtml);
+
+        // 绑定事件监听器
+        this.bindFloatingFormEvents();
+
+        // 自动展开表单并填充数据
+        setTimeout(() => {
+            this.toggleFloatingForm();
+
+            // 填充现有数据
+            config.attributes.forEach(attr => {
+                const field = document.getElementById(`field-${attr}`);
+                if (field && item[attr] !== undefined) {
+                    field.value = item[attr];
+                    console.log(`填充字段 ${attr}: ${item[attr]}`);
+                }
+            });
+
+            console.log('编辑表单数据填充完成');
+        }, 100);
+    }
+
+    /**
+     * 从浮动表单保存编辑的项目
+     * @param {string} listType - 列表类型
+     * @param {string} itemId - 项目ID
+     * @param {string} context - 上下文
+     */
+    async saveEditedItemFromFloating(listType, itemId, context) {
+        if (!this.whitelistManager) {
+            console.error('WhitelistManager未初始化');
+            return;
+        }
+
+        const config = this.whitelistManager.getListTypeConfig(listType);
+        if (!config) {
+            console.error(`未找到列表类型配置: ${listType}`);
+            return;
+        }
+
+        console.log(`开始保存编辑的${config.name}项目`, { listType, itemId, context });
+
+        try {
+            // 收集表单数据
+            const newData = {};
+            config.attributes.forEach(attr => {
+                const field = document.getElementById(`field-${attr}`);
+                if (field) {
+                    newData[attr] = field.value.trim();
+                }
+            });
+
+            console.log('收集到的编辑数据:', newData);
+
+            // 更新项目
+            console.log('开始更新列表项目...');
+            await this.whitelistManager.updateListItem(listType, itemId, newData);
+            console.log('列表项目更新成功');
+
+            // 移除浮动表单
+            this.removeFloatingForm();
+
+            // 刷新列表
+            console.log(`刷新${context}列表`);
+            if (context === 'whitelist') {
+                this.loadWhitelistItems(listType);
+            } else {
+                this.loadBlacklistItems(listType);
+            }
+
+            this.toastManager?.show('项目更新成功', 'success');
+            console.log('项目更新流程完成');
+
+        } catch (error) {
+            console.error('更新项目失败:', error);
+            this.toastManager?.show(`更新失败: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * 保存编辑的项目（兼容旧的模态框方式）
+     * @param {string} listType - 列表类型
+     * @param {string} itemId - 项目ID
+     * @param {string} context - 上下文
+     */
+    async saveEditedItem(listType, itemId, context) {
+        // 重定向到浮动表单方法
+        return this.saveEditedItemFromFloating(listType, itemId, context);
+    }
+
+    /**
+     * 删除列表项目
+     * @param {string} listType - 列表类型
+     * @param {string} itemId - 项目ID
+     * @param {string} context - 上下文
+     */
+    async deleteListItem(listType, itemId, context) {
+        if (!this.whitelistManager) {
+            log.error('WhitelistManager未初始化');
+            return;
+        }
+
+        log.info('开始删除项目', { listType, itemId, context });
+
+        // 获取要删除的项目信息用于日志
+        const items = this.whitelistManager.getListItems(listType);
+        const item = items.find(i => i.id === itemId);
+
+        if (!item) {
+            log.warn('要删除的项目不存在', { itemId, listType });
+            this.toastManager?.show('项目不存在', 'error');
+            return;
+        }
+
+        log.debug('找到要删除的项目', { item: { ...item, _element: undefined } });
+
+        let confirmed = false;
+        if (!this.modalManager) {
+            log.warn('ModalManager未初始化，使用浏览器原生确认对话框');
+            confirmed = window.confirm('确定要删除这个项目吗？此操作无法撤销。');
+        } else {
+            log.debug('显示删除确认对话框');
+            confirmed = await this.modalManager.showDanger(
+                '确认删除',
+                '确定要删除这个项目吗？此操作无法撤销。',
+                '删除'
+            );
+        }
+        log.debug('用户确认结果', { confirmed });
+
+        if (!confirmed) {
+            log.info('用户取消删除操作', { itemId, listType });
+            return;
+        }
+
+        try {
+            log.debug('开始执行删除操作', { listType, itemId });
+            await this.whitelistManager.removeListItem(listType, itemId);
+            log.debug('删除操作执行成功', { listType, itemId });
+
+            // 刷新列表
+            log.debug('刷新列表', { context, listType });
+            if (context === 'whitelist') {
+                this.loadWhitelistItems(listType);
+            } else {
+                this.loadBlacklistItems(listType);
+            }
+
+            this.toastManager?.show('项目删除成功', 'success');
+            log.operation('删除列表项目', { listType, itemId, context });
+
+        } catch (error) {
+            log.error('删除项目失败', {
+                error: error.message,
+                itemId,
+                listType,
+                context,
+                stack: error.stack
+            });
+            this.toastManager?.show(`删除失败: ${error.message}`, 'error');
+        }
+    }
+
+
+
+
+
+
 }

@@ -299,6 +299,172 @@ body {
     font-weight: 500;
 }
 
+/* 模态对话框样式 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
+
+.modal {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.modal-body {
+    padding: 20px 24px;
+}
+
+.modal-body p {
+    margin: 0 0 16px 0;
+    color: #555;
+    line-height: 1.5;
+}
+
+.modal-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.modal-footer .btn {
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 80px;
+}
+
+.modal-footer .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.modal-footer .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.modal-footer .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.modal-footer .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.modal-footer .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.modal-footer .btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+.modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #545b62;
+    border-color: #4e555b;
+}
+
+/* 表单输入样式 */
+.form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-input:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
 /* 工具类 */
 .hidden {
     display: none !important;
@@ -346,5 +512,374 @@ body {
     
     .header-actions {
         justify-content: center;
+    }
+}
+
+/* 白名单/黑名单管理样式 */
+.whitelist-controls,
+.blacklist-controls {
+    display: flex;
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.control-group label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.whitelist-content,
+.blacklist-content {
+    min-height: 400px;
+}
+
+.list-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.list-header h3 {
+    margin: 0 0 5px 0;
+    color: #495057;
+}
+
+.list-stats {
+    margin-top: 10px;
+}
+
+.list-table-container {
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.list-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.list-table th,
+.list-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.list-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.list-table tr:hover {
+    background: #f8f9fa;
+}
+
+.list-table .actions {
+    width: 120px;
+    text-align: center;
+}
+
+.list-table .actions .btn {
+    margin: 0 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: 50px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.list-table .actions .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.list-table .actions .btn-secondary:hover {
+    background-color: #545b62;
+    border-color: #4e555b;
+}
+
+.list-table .actions .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.list-table .actions .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* 类型和状态徽章 */
+.type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.type-white {
+    background: #d4edda;
+    color: #155724;
+}
+
+.type-black {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.type-proxy {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.type-gray {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    background: #e7f3ff;
+    color: #0066cc;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.bool-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.bool-true {
+    background: #d4edda;
+    color: #155724;
+}
+
+.bool-false {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.empty-state,
+.error-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.error-state {
+    color: #dc3545;
+}
+
+.empty-state p,
+.error-state p {
+    margin: 0;
+    font-size: 16px;
+}
+
+.empty-state .text-muted {
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* 浮动表单样式 */
+.floating-form {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.floating-form.collapsed {
+    transform: translateY(calc(100% - 60px));
+}
+
+.floating-form.expanded {
+    transform: translateY(0);
+}
+
+.floating-form-header {
+    height: 60px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    user-select: none;
+}
+
+.floating-form-header:hover {
+    background: #e9ecef;
+}
+
+.floating-form-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.floating-form-title i {
+    font-size: 16px;
+    color: #007bff;
+}
+
+.floating-form-toggle {
+    transition: transform 0.3s ease;
+}
+
+.floating-form.expanded .floating-form-toggle {
+    transform: rotate(180deg);
+}
+
+.floating-form-content {
+    padding: 20px;
+    max-height: calc(80vh - 60px);
+    overflow-y: auto;
+}
+
+.floating-form-actions {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.floating-form .form-group {
+    margin-bottom: 15px;
+}
+
+.floating-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.floating-form .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.floating-form .form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.floating-form .form-control:required {
+    border-left: 3px solid #007bff;
+}
+
+.floating-form .btn {
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.floating-form .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.floating-form .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.floating-form .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.floating-form .btn-secondary:hover {
+    background-color: #545b62;
+    border-color: #545b62;
+}
+
+/* 浮动表单响应式设计 */
+@media (max-width: 768px) {
+    .floating-form {
+        max-height: 90vh;
+    }
+
+    .floating-form.collapsed {
+        transform: translateY(calc(100% - 50px));
+    }
+
+    .floating-form-header {
+        height: 50px;
+        padding: 0 15px;
+    }
+
+    .floating-form-content {
+        padding: 15px;
+        max-height: calc(90vh - 50px);
+    }
+
+    .floating-form-title {
+        font-size: 14px;
+    }
+
+    .floating-form-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .floating-form .btn {
+        width: 100%;
+        padding: 10px 16px;
     }
 }

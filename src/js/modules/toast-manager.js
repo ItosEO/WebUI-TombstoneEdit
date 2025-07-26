@@ -3,6 +3,8 @@
  * 负责显示各种类型的通知消息
  */
 
+import { log } from './logger.js';
+
 export class ToastManager {
     constructor() {
         this.container = null;
@@ -19,7 +21,7 @@ export class ToastManager {
     initializeContainer() {
         this.container = document.getElementById('toast-container');
         if (!this.container) {
-            console.warn('Toast容器未找到');
+            log.warn('Toast容器未找到');
         }
     }
 
@@ -28,12 +30,13 @@ export class ToastManager {
      * @param {string} message - 消息内容
      * @param {string} type - 类型（success, error, warning, info, loading）
      * @param {number} duration - 显示时长（毫秒）
+     * @returns {string} Toast ID
      */
     show(message, type = 'info', duration = this.autoCloseDelay) {
         if (type === 'loading') {
             return this.showLoading(message);
         }
-        this.showToast(type, '', message, duration);
+        return this.showToast(type, '', message, duration);
     }
 
     /**
@@ -85,7 +88,7 @@ export class ToastManager {
      */
     showToast(type, title, message, duration = this.autoCloseDelay) {
         if (!this.container) {
-            console.warn('Toast容器未初始化');
+            log.warn('Toast容器未初始化');
             return;
         }
 
@@ -134,7 +137,7 @@ export class ToastManager {
             });
         }
 
-        console.log(`Toast显示: [${type.toUpperCase()}] ${title} - ${message}`);
+        log.debug(`Toast显示: [${type.toUpperCase()}] ${title} - ${message}`);
         return toastId;
     }
 

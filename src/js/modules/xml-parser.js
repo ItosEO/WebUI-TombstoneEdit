@@ -3,6 +3,8 @@
  * 负责ColorOS墓碑配置文件的XML解析和序列化
  */
 
+import { log } from './logger.js';
+
 export class XMLParser {
     constructor() {
         this.parser = new DOMParser();
@@ -34,11 +36,11 @@ export class XMLParser {
             // 解析配置数据
             const config = this.parseElement(rootElement);
             
-            console.log('XML解析完成:', config);
+            log.info('XML解析完成');
             return config;
 
         } catch (error) {
-            console.error('XML解析失败:', error);
+            log.error('XML解析失败:', error);
             throw new Error(`XML解析失败: ${error.message}`);
         }
     }
@@ -66,11 +68,11 @@ export class XMLParser {
             // 格式化XML
             xmlString = this.formatXML(xmlString);
 
-            console.log('XML序列化完成');
+            log.info('XML序列化完成');
             return xmlString;
 
         } catch (error) {
-            console.error('XML序列化失败:', error);
+            log.error('XML序列化失败:', error);
             throw new Error(`XML序列化失败: ${error.message}`);
         }
     }

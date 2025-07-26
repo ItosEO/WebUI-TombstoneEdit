@@ -3,10 +3,14 @@
  * 负责配置数据的管理、验证和操作
  */
 
+import { log } from './logger.js';
+
 export class ConfigManager {
     constructor() {
         // 配置项定义
         this.configDefinitions = this.initializeConfigDefinitions();
+        // 当前配置数据
+        this.currentConfig = null;
     }
 
     /**
@@ -179,13 +183,13 @@ export class ConfigManager {
             const lastPart = parts[parts.length - 1];
             if (current.attributes) {
                 current.attributes[lastPart] = String(value);
-                console.log(`配置已更新: ${path} = ${value}`);
+                log.debug(`配置已更新: ${path} = ${value}`);
             } else {
                 throw new Error(`无法设置配置值: ${path}`);
             }
 
         } catch (error) {
-            console.error('更新配置值失败:', error);
+            log.error('更新配置值失败:', error);
             throw error;
         }
     }
@@ -221,7 +225,7 @@ export class ConfigManager {
             return current;
 
         } catch (error) {
-            console.error('获取配置值失败:', error);
+            log.error('获取配置值失败:', error);
             return undefined;
         }
     }
@@ -241,6 +245,22 @@ export class ConfigManager {
      */
     getAllSections() {
         return Object.keys(this.configDefinitions);
+    }
+
+    /**
+     * 设置当前配置数据
+     * @param {Object} config - 配置数据
+     */
+    setCurrentConfig(config) {
+        this.currentConfig = config;
+    }
+
+    /**
+     * 获取当前配置数据
+     * @returns {Object} 当前配置数据
+     */
+    getCurrentConfig() {
+        return this.currentConfig;
     }
 
     /**
