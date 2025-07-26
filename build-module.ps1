@@ -88,7 +88,7 @@ Copy-Item -Path "$ModuleDir\webroot\*.html" -Destination "$tempDir\webroot\" -Fo
 Copy-Item -Path "$ModuleDir\webroot\*.css" -Destination "$tempDir\webroot\" -Force
 Copy-Item -Path "$ModuleDir\webroot\*.js" -Destination "$tempDir\webroot\" -Force
 
-# 复制其他资源目录（如 images、fonts 等，但排除 js 和 styles）
+# 复制其他资源目录（如 images、fonts 等，但排除源码目录 js 和 styles）
 $assetDirs = Get-ChildItem -Path "$ModuleDir\webroot" -Directory | Where-Object { $_.Name -notin @('js','styles') }
 foreach ($dir in $assetDirs) {
     Copy-Item -Path $dir.FullName -Destination "$tempDir\webroot\" -Recurse -Force

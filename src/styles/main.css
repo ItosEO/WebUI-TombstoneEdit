@@ -176,21 +176,14 @@ body {
 }
 
 /* 导航菜单 */
-.nav-section {
-    margin-bottom: var(--spacing-lg);
-}
-
-.nav-title {
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.nav-menu {
+    margin-top: var(--spacing-md);
 }
 
 .nav-list {
     list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
 .nav-link {

@@ -4,8 +4,8 @@
   "description": "ColorOS Tombstone Config Editor KernelSU WebUI",
   "license": "MIT",
   "scripts": {
-    "dev": "parcel module/webroot/index.html --open --no-cache",
-    "build": "parcel build module/webroot/index.html --dist-dir module/webroot --no-source-maps --public-url ./ --no-cache"
+    "dev": "parcel src/index.html --open --no-cache",
+    "build": "parcel build src/index.html --dist-dir module/webroot --no-source-maps --public-url ./ --no-cache"
   },
   "dependencies": {
     "kernelsu": "^1.0.6"

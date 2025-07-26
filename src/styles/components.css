@@ -117,6 +117,30 @@
     resize: vertical;
 }
 
+.form-help {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+    line-height: 1.4;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin: 0;
+    width: auto;
+}
+
+.checkbox-text {
+    color: var(--text-primary);
+}
+
 .form-select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
@@ -239,6 +263,84 @@
 }
 
 .config-item-control {
+    flex-shrink: 0;
+}
+
+/* 配置子节 */
+.config-subsection {
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    background-color: var(--bg-secondary);
+}
+
+.config-subsection-title {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* 规则项样式 */
+.config-rule-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: var(--spacing-xs);
+    background-color: var(--bg-primary);
+    transition: all var(--transition-fast);
+}
+
+.config-rule-item:hover {
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.rule-info {
+    flex: 1;
+    margin-right: var(--spacing-md);
+}
+
+.rule-title {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+}
+
+.rule-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-xs);
+}
+
+.rule-details span {
+    padding: 2px 6px;
+    border-radius: var(--border-radius-xs);
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.rule-status.enabled {
+    background-color: var(--success-color);
+    color: var(--text-inverse);
+}
+
+.rule-status.disabled {
+    background-color: var(--error-color);
+    color: var(--text-inverse);
+}
+
+.rule-actions {
+    display: flex;
+    gap: var(--spacing-xs);
     flex-shrink: 0;
 }
 

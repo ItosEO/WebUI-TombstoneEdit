@@ -24,6 +24,19 @@ export class ToastManager {
     }
 
     /**
+     * 通用显示方法
+     * @param {string} message - 消息内容
+     * @param {string} type - 类型（success, error, warning, info, loading）
+     * @param {number} duration - 显示时长（毫秒）
+     */
+    show(message, type = 'info', duration = this.autoCloseDelay) {
+        if (type === 'loading') {
+            return this.showLoading(message);
+        }
+        this.showToast(type, '', message, duration);
+    }
+
+    /**
      * 显示成功消息
      * @param {string} title - 标题
      * @param {string} message - 消息内容
