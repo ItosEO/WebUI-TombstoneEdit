@@ -7,6 +7,9 @@
     "dev": "parcel src/index.html --open --no-cache",
     "build": "parcel build src/index.html --dist-dir module/webroot --no-source-maps --public-url ./ --no-cache"
   },
+  "alias": {
+    "kernelsu": false
+  },
   "dependencies": {
     "kernelsu": "^1.0.6"
   },
