@@ -25,12 +25,29 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
+    
+    # 新增：清理缓存和重新安装依赖
+    - name: Clear npm cache and reinstall dependencies
+      run: |
+        npm cache clean --force
+        rm -rf node_modules package-lock.json
+        npm install
         
-    - name: Install dependencies
-      run: npm ci
-      
+    # 新增：确保原生依赖正确安装
+    - name: Install Parcel native dependencies
+      run: |
+        npm install @parcel/rust-linux-x64-gnu --save-dev --force
+        
+    # 新增：验证依赖
+    - name: Verify Parcel installation
+      run: |
+        npm list @parcel/rust-linux-x64-gnu || echo "Native module not found, will try alternative approach"
+        
     - name: Build WebUI
-      run: npm run build
+      run: |
+        # 如果原生模块仍然有问题，使用 --no-cache 和环境变量
+        export PARCEL_WORKERS=1
+        npm run build || npm run build -- --no-cache
       
     - name: Get module information
       id: module_info
