@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "parcel": "^2.10.0"
+  },
+  "alias": {
+    "kernelsu": "./kernelsu-stub.js"
   }
 }

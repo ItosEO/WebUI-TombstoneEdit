@@ -1,0 +1,97 @@
+name: Build and Release KernelSU Module
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build WebUI assets
+        run: npm run build
+        
+      - name: Create module directory structure
+        run: |
+          # Ensure all required directories exist
+          mkdir -p dist
+          
+      - name: Package KernelSU module
+        run: |
+          cd module
+          # Get module info from module.prop
+          MODULE_ID=$(grep '^id=' module.prop | cut -d'=' -f2)
+          MODULE_VERSION=$(grep '^version=' module.prop | cut -d'=' -f2 || echo "unknown")
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          
+          # Create zip filename
+          ZIP_NAME="${MODULE_ID}_${MODULE_VERSION}_${TIMESTAMP}.zip"
+          
+          # Create zip file with proper structure (exclude parent directory)
+          zip -r "../dist/${ZIP_NAME}" . -x "*.git*" "*.DS_Store"
+          
+          # Save filename for later use
+          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+          echo "MODULE_ID=${MODULE_ID}" >> $GITHUB_ENV
+          echo "MODULE_VERSION=${MODULE_VERSION}" >> $GITHUB_ENV
+          
+      - name: Verify module package
+        run: |
+          cd dist
+          echo "Created module package: ${ZIP_NAME}"
+          echo "Package size: $(du -h ${ZIP_NAME} | cut -f1)"
+          
+          # List contents of the zip
+          echo "Package contents:"
+          unzip -l ${ZIP_NAME}
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## KernelSU Module Release
+            
+            **Module ID:** ${{ env.MODULE_ID }}
+            **Version:** ${{ env.MODULE_VERSION }}
+            **Build Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            
+            ### Installation Instructions
+            1. Download the module zip file below
+            2. Open KernelSU Manager
+            3. Go to Modules tab
+            4. Tap "Install from local"
+            5. Select the downloaded zip file
+            6. Reboot your device
+            
+            ### Features
+            - ColorOS Tombstone Configuration Editor
+            - XML parsing and validation
+            - Backup and restore functionality
+            - WebUI interface with modern design
+            
+            ### Changes in this version
+            - Built from commit: ${{ github.sha }}
+            - Automated build and packaging
+            
+          draft: false
+          prerelease: false
+          files: |
+            dist/${{ env.ZIP_NAME }}
