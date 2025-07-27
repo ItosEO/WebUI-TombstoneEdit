@@ -85,6 +85,9 @@ class TombstoneEditor {
             // 检查运行环境
             await this.checkEnvironment();
 
+            // 初始化主题
+            this.initializeTheme();
+
             // 初始化UI
             this.uiManager.initializeUI();
 
@@ -391,6 +394,46 @@ class TombstoneEditor {
     }
 
     /**
+     * 切换主题
+     */
+    toggleTheme() {
+        const body = document.body;
+        const themeIcon = document.querySelector('.theme-icon');
+
+        // 获取当前主题
+        const currentTheme = body.getAttribute('data-theme');
+
+        if (currentTheme === 'dark') {
+            // 切换到亮色主题
+            body.removeAttribute('data-theme');
+            if (themeIcon) themeIcon.textContent = '🌙';
+            localStorage.setItem('theme', 'light');
+        } else {
+            // 切换到暗色主题
+            body.setAttribute('data-theme', 'dark');
+            if (themeIcon) themeIcon.textContent = '☀️';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    /**
+     * 初始化主题
+     */
+    initializeTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const body = document.body;
+        const themeIcon = document.querySelector('.theme-icon');
+
+        if (savedTheme === 'dark') {
+            body.setAttribute('data-theme', 'dark');
+            if (themeIcon) themeIcon.textContent = '☀️';
+        } else {
+            body.removeAttribute('data-theme');
+            if (themeIcon) themeIcon.textContent = '🌙';
+        }
+    }
+
+    /**
      * 绑定全局事件
      */
     async bindGlobalEvents() {
@@ -398,6 +441,11 @@ class TombstoneEditor {
         document.addEventListener('configChange', async (event) => {
             const { path, value } = event.detail;
             await this.handleConfigChange(path, value);
+        });
+
+        // 主题切换按钮
+        document.getElementById('theme-toggle')?.addEventListener('click', () => {
+            this.toggleTheme();
         });
 
         // 保存按钮

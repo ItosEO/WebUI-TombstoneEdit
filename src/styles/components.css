@@ -1,20 +1,34 @@
 /* ColorOS墓碑配置编辑器 - 组件样式文件 */
 
-/* 按钮组件 */
+/* 按钮组件 - 现代化设计，基于temp.css */
 .btn {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid transparent;
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 12px;
     font-weight: 500;
+    font-size: 0.95rem;
     text-decoration: none;
+    border: none;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all 0.2s ease;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 2px 10px rgba(0,0,0,0.06), inset 0 -2px 0 rgba(0,0,0,0.1);
+    gap: 8px;
     user-select: none;
     white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.07), inset 0 -2px 0 rgba(0,0,0,0.12);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 1px 5px rgba(0,0,0,0.05), inset 0 2px 0 rgba(0,0,0,0.08);
 }
 
 .btn:disabled {
@@ -23,61 +37,64 @@
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    color: var(--text-inverse);
-    border-color: var(--primary-color);
+    background-color: var(--accent-primary);
+    color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-    background-color: var(--primary-hover);
-    border-color: var(--primary-hover);
-}
-
-.btn-primary:active:not(:disabled) {
-    background-color: var(--primary-active);
-    border-color: var(--primary-active);
-}
-
-.btn-secondary {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    border-color: var(--border-color);
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background-color: var(--bg-hover);
-    border-color: var(--border-dark);
-}
-
-.btn-success {
-    background-color: var(--success-color);
-    color: var(--text-inverse);
-    border-color: var(--success-color);
-}
-
-.btn-warning {
-    background-color: var(--warning-color);
-    color: var(--text-inverse);
-    border-color: var(--warning-color);
+    background-color: var(--accent-hover);
 }
 
 .btn-danger {
-    background-color: var(--error-color);
-    color: var(--text-inverse);
-    border-color: var(--error-color);
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: var(--danger-hover);
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    background-color: var(--success-hover);
+}
+
+.btn-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.btn-warning {
+    background-color: var(--warning);
+    color: white;
 }
 
 .btn-small {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--font-size-xs);
+    padding: 6px 12px;
+    font-size: 0.85rem;
 }
 
 .btn-large {
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-size: var(--font-size-md);
+    padding: 14px 28px;
+    font-size: 1.1rem;
 }
 
-/* 表单组件 */
+.btn-icon {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+/* 表单组件 - 现代化设计 */
 .form-group {
     margin-bottom: var(--spacing-md);
 }
@@ -86,35 +103,38 @@
     display: block;
     margin-bottom: var(--spacing-xs);
     font-weight: 500;
-    color: var(--text-primary);
-    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-size: 0.95rem;
 }
 
 .form-input {
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
-    transition: border-color var(--transition-fast);
-    background-color: var(--bg-primary);
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.2s;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .form-input:disabled {
     background-color: var(--bg-tertiary);
     color: var(--text-disabled);
     cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .form-textarea {
-    min-height: 80px;
+    min-height: 100px;
     resize: vertical;
+    line-height: 1.5;
 }
 
 .form-help {
@@ -130,11 +150,14 @@
     gap: var(--spacing-sm);
     cursor: pointer;
     font-size: var(--font-size-sm);
+    padding: 8px 0;
 }
 
 .checkbox-label input[type="checkbox"] {
     margin: 0;
-    width: auto;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-primary);
 }
 
 .checkbox-text {
@@ -144,10 +167,10 @@
 .form-select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right var(--spacing-sm) center;
+    background-position: right 16px center;
     background-repeat: no-repeat;
     background-size: 16px 12px;
-    padding-right: var(--spacing-xl);
+    padding-right: 48px;
 }
 
 /* 开关组件 */
@@ -214,35 +237,38 @@
     cursor: not-allowed;
 }
 
-/* 配置项组件 */
+/* 配置项组件 - 现代化卡片设计 */
 .config-section {
     margin-bottom: var(--spacing-xl);
 }
 
 .config-section-title {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 500;
     color: var(--text-primary);
     margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
-    border-bottom: 2px solid var(--primary-color);
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    border-radius: 16px 16px 0 0;
 }
 
 .config-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md);
-    border: 1px solid var(--border-light);
-    border-radius: var(--border-radius-md);
-    margin-bottom: var(--spacing-sm);
-    background-color: var(--bg-primary);
-    transition: all var(--transition-fast);
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    background-color: var(--card-bg);
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--shadow-sm);
 }
 
 .config-item:hover {
-    border-color: var(--border-color);
-    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .config-item-info {
@@ -254,12 +280,13 @@
     font-weight: 500;
     color: var(--text-primary);
     margin-bottom: var(--spacing-xs);
+    font-size: 1rem;
 }
 
 .config-item-description {
-    font-size: var(--font-size-xs);
+    font-size: 0.9rem;
     color: var(--text-secondary);
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .config-item-control {
@@ -392,72 +419,80 @@
     color: var(--error-color);
 }
 
-/* 模态对话框 */
+/* 模态对话框 - 现代化设计 */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: fadeIn var(--transition-normal);
+    animation: fadeIn 0.3s ease;
 }
 
 .modal {
-    background: var(--bg-primary);
-    border-radius: var(--border-radius-lg);
+    background-color: var(--card-bg);
+    border-radius: 24px;
     box-shadow: var(--shadow-lg);
-    max-width: 500px;
+    max-width: 420px;
     width: 90%;
     max-height: 80vh;
     overflow: hidden;
-    animation: slideIn var(--transition-normal);
+    animation: slideIn 0.3s ease;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-light);
+    padding: 40px 40px 16px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
     margin: 0;
-    font-size: var(--font-size-lg);
+    font-size: 1.8rem;
+    font-weight: 600;
     color: var(--text-primary);
 }
 
 .modal-close {
     background: none;
     border: none;
-    font-size: var(--font-size-xl);
+    font-size: 28px;
     cursor: pointer;
-    color: var(--text-secondary);
-    padding: var(--spacing-xs);
-    border-radius: var(--border-radius-sm);
-    transition: all var(--transition-fast);
+    color: var(--text-tertiary);
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-close:hover {
-    background-color: var(--bg-hover);
+    background-color: var(--bg-tertiary);
     color: var(--text-primary);
 }
 
 .modal-body {
-    padding: var(--spacing-lg);
+    padding: 24px 40px;
 }
 
 .modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-lg);
-    border-top: 1px solid var(--border-light);
+    gap: 12px;
+    padding: 16px 40px 40px;
+    border-top: 1px solid var(--border-color);
 }
 
 /* Toast 通知 */

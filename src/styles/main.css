@@ -1,47 +1,60 @@
 /* ColorOS墓碑配置编辑器 - 主样式文件 */
 
-/* CSS变量定义 */
+/* CSS变量定义 - 基于temp.css的现代化设计 */
 :root {
-    /* 颜色主题 */
-    --primary-color: #1890ff;
-    --primary-hover: #40a9ff;
-    --primary-active: #096dd9;
-    --secondary-color: #f5f5f5;
-    --success-color: #52c41a;
-    --warning-color: #faad14;
-    --error-color: #ff4d4f;
-    --info-color: #1890ff;
-    
-    /* 文字颜色 */
-    --text-primary: #262626;
-    --text-secondary: #595959;
-    --text-disabled: #bfbfbf;
+    /* 主色调 */
+    --bg-primary: #f7f7f9;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f0f2f5;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-tertiary: #888888;
+    --accent-primary: #3b82f6;
+    --accent-hover: #2563eb;
+    --border-color: #e5e7eb;
+
+    /* 阴影系统 */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+
+    /* 状态颜色 */
+    --status-online: #22c55e;
+    --status-offline: #9ca3af;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --success: #10b981;
+    --success-hover: #059669;
+    --warning: #f59e0b;
+    --input-bg: #ffffff;
+    --card-bg: #ffffff;
+    --blur-bg: rgba(255,255,255,0.85);
+    --info: #3b82f6;
+    --info-hover: #2563eb;
+
+    /* 兼容性别名 */
+    --primary-color: var(--accent-primary);
+    --primary-hover: var(--accent-hover);
+    --primary-active: var(--accent-hover);
+    --secondary-color: var(--bg-tertiary);
+    --success-color: var(--success);
+    --warning-color: var(--warning);
+    --error-color: var(--danger);
+    --info-color: var(--info);
+    --text-disabled: var(--text-tertiary);
     --text-inverse: #ffffff;
-    
-    /* 背景颜色 */
-    --bg-primary: #ffffff;
-    --bg-secondary: #fafafa;
-    --bg-tertiary: #f5f5f5;
     --bg-hover: #f0f0f0;
     --bg-active: #e6f7ff;
-    
-    /* 边框颜色 */
-    --border-color: #d9d9d9;
-    --border-light: #f0f0f0;
+    --border-light: var(--bg-tertiary);
     --border-dark: #bfbfbf;
-    
-    /* 阴影 */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
-    
+
     /* 间距 */
     --spacing-xs: 4px;
     --spacing-sm: 8px;
     --spacing-md: 16px;
     --spacing-lg: 24px;
     --spacing-xl: 32px;
-    
+
     /* 字体大小 */
     --font-size-xs: 12px;
     --font-size-sm: 14px;
@@ -49,35 +62,69 @@
     --font-size-lg: 18px;
     --font-size-xl: 20px;
     --font-size-xxl: 24px;
-    
+
     /* 圆角 */
     --border-radius-sm: 4px;
-    --border-radius-md: 6px;
-    --border-radius-lg: 8px;
-    
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+
     /* 动画 */
-    --transition-fast: 0.15s ease;
+    --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
 }
 
-/* 基础重置 */
+/* 暗色主题支持 */
+[data-theme="dark"] {
+    --bg-primary: #171923;
+    --bg-secondary: #1e212b;
+    --bg-tertiary: #252a37;
+    --text-primary: #f7fafc;
+    --text-secondary: #cbd5e0;
+    --text-tertiary: #a0aec0;
+    --accent-primary: #60a5fa;
+    --accent-hover: #3b82f6;
+    --border-color: #2d3748;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.3);
+    --status-online: #10b981;
+    --status-offline: #6b7280;
+    --danger: #f87171;
+    --danger-hover: #ef4444;
+    --success: #34d399;
+    --success-hover: #10b981;
+    --warning: #fbbf24;
+    --input-bg: #252a37;
+    --card-bg: #1e212b;
+    --blur-bg: rgba(23,25,35,0.85);
+    --info: #60a5fa;
+    --info-hover: #3b82f6;
+}
+
+/* 基础重置 - 现代化样式 */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 html {
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 16px;
+    line-height: 1.6;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
     color: var(--text-primary);
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
+    min-height: 100vh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* 应用主容器 */
@@ -87,32 +134,36 @@ body {
     min-height: 100vh;
 }
 
-/* 顶部导航栏 */
+/* 顶部导航栏 - 现代化设计 */
 .header {
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
     box-shadow: var(--shadow-sm);
+    padding: 16px 24px;
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background-color: var(--blur-bg);
 }
 
 .header-content {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-md) var(--spacing-lg);
+    justify-content: space-between;
     max-width: 1400px;
     margin: 0 auto;
+    width: 100%;
 }
 
 .app-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: var(--text-primary);
 }
 
 .app-title .icon {
@@ -121,7 +172,8 @@ body {
 
 .header-actions {
     display: flex;
-    gap: var(--spacing-sm);
+    align-items: center;
+    gap: 16px;
 }
 
 /* 主要内容区域 */
@@ -131,21 +183,24 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    padding: 24px;
 }
 
-/* 侧边栏 */
+/* 侧边栏 - 现代化卡片设计 */
 .sidebar {
     width: 280px;
-    background: var(--bg-primary);
-    border-right: 1px solid var(--border-color);
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
     padding: var(--spacing-lg);
     overflow-y: auto;
-    height: calc(100vh - 120px);
+    height: fit-content;
     position: sticky;
-    top: 80px;
+    top: 100px;
+    margin-right: 24px;
 }
 
-/* 搜索框 */
+/* 搜索框 - 现代化设计 */
 .search-box {
     position: relative;
     margin-bottom: var(--spacing-lg);
@@ -153,29 +208,33 @@ body {
 
 .search-input {
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm) var(--spacing-md);
+    padding: 14px 20px 14px 48px;
+    border-radius: 12px;
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
-    transition: border-color var(--transition-fast);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
 }
 
 .search-input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .search-icon {
     position: absolute;
-    right: var(--spacing-sm);
+    left: 16px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-secondary);
+    color: var(--text-tertiary);
+    font-size: 1.2rem;
     pointer-events: none;
 }
 
-/* 导航菜单 */
+/* 导航菜单 - 现代化设计 */
 .nav-menu {
     margin-top: var(--spacing-md);
 }
@@ -188,29 +247,31 @@ body {
 
 .nav-link {
     display: block;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 12px 16px;
     color: var(--text-primary);
     text-decoration: none;
-    border-radius: var(--border-radius-sm);
-    transition: all var(--transition-fast);
-    font-size: var(--font-size-sm);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
 }
 
 .nav-link:hover {
-    background-color: var(--bg-hover);
-    color: var(--primary-color);
+    background-color: var(--bg-tertiary);
+    color: var(--accent-primary);
+    transform: translateX(2px);
 }
 
 .nav-link.active {
-    background-color: var(--bg-active);
-    color: var(--primary-color);
+    background-color: var(--accent-primary);
+    color: white;
     font-weight: 500;
+    box-shadow: var(--shadow-sm);
 }
 
-/* 内容区域 */
+/* 内容区域 - 现代化卡片设计 */
 .content-area {
     flex: 1;
-    padding: var(--spacing-lg);
     position: relative;
     overflow-y: auto;
 }
@@ -269,24 +330,31 @@ body {
     font-size: var(--font-size-sm);
 }
 
-/* 配置容器 */
+/* 配置容器 - 现代化卡片设计 */
 .config-container {
-    background: var(--bg-primary);
-    border-radius: var(--border-radius-lg);
+    background: var(--card-bg);
+    border-radius: 16px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* 状态栏 */
+.config-container:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* 状态栏 - 现代化设计 */
 .status-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--bg-primary);
+    padding: 12px 24px;
+    background: var(--card-bg);
     border-top: 1px solid var(--border-color);
-    font-size: var(--font-size-xs);
+    font-size: 0.85rem;
     color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
 }
 
 .status-info {
@@ -295,8 +363,11 @@ body {
 }
 
 .unsaved-indicator {
-    color: var(--warning-color);
+    color: var(--warning);
     font-weight: 500;
+    padding: 4px 8px;
+    background-color: rgba(245, 158, 11, 0.1);
+    border-radius: 6px;
 }
 
 /* 模态对话框样式 */
@@ -490,29 +561,192 @@ body {
 .mt-3 { margin-top: var(--spacing-md); }
 .mt-4 { margin-top: var(--spacing-lg); }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
+/* 响应式设计 - 现代化适配 */
+@media (max-width: 1200px) {
+    .main-content {
+        padding: 16px;
+    }
+
+    .sidebar {
+        width: 260px;
+    }
+}
+
+@media (max-width: 992px) {
     .main-content {
         flex-direction: column;
+        padding: 16px;
     }
-    
+
     .sidebar {
         width: 100%;
         height: auto;
         position: static;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
+        margin-right: 0;
+        margin-bottom: 24px;
+        border-radius: 16px;
     }
-    
+
     .header-content {
         flex-direction: column;
         gap: var(--spacing-md);
         text-align: center;
+        padding: 12px 16px;
     }
-    
+
     .header-actions {
         justify-content: center;
+        flex-wrap: wrap;
     }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 12px 16px;
+    }
+
+    .app-title {
+        font-size: 1.2rem;
+    }
+
+    .sidebar {
+        padding: 16px;
+    }
+
+    .nav-link {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .sidebar {
+        padding: 12px;
+    }
+
+    .search-input {
+        padding: 10px 16px 10px 40px;
+        font-size: 0.9rem;
+    }
+
+    .search-icon {
+        left: 12px;
+        font-size: 1rem;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    .status-bar {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+/* 现代化动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 加载动画优化 */
+.loading-overlay {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.config-container {
+    animation: fadeUp 0.5s ease forwards;
+}
+
+/* 工具类 */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--spacing-xs); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-3 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-lg); }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--spacing-xs); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-3 { margin-top: var(--spacing-md); }
+.mt-4 { margin-top: var(--spacing-lg); }
+
+/* 主题切换按钮（如果需要） */
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-tertiary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.1);
+    transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+    background-color: var(--border-color);
+    transform: translateY(-1px);
+}
+
+.theme-icon {
+    font-size: 1.2rem;
 }
 
 /* 白名单/黑名单管理样式 */
