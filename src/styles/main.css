@@ -749,81 +749,111 @@ body {
     font-size: 1.2rem;
 }
 
-/* 白名单/黑名单管理样式 */
+/* 白名单/黑名单管理样式 - 现代化设计 */
 .whitelist-controls,
 .blacklist-controls {
     display: flex;
     gap: 20px;
     align-items: end;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
+    margin-bottom: 24px;
+    padding: 24px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.whitelist-controls:hover,
+.blacklist-controls:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .control-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
 }
 
 .control-group label {
     font-weight: 500;
-    color: #495057;
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
 }
 
 .whitelist-content,
 .blacklist-content {
     min-height: 400px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
 }
 
 .list-header {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 0;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
 }
 
 .list-header h3 {
-    margin: 0 0 5px 0;
-    color: #495057;
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 500;
 }
 
 .list-stats {
-    margin-top: 10px;
+    margin-top: 12px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .list-table-container {
     overflow-x: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 0 0 16px 16px;
 }
 
 .list-table {
     width: 100%;
-    border-collapse: collapse;
-    background: white;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--card-bg);
 }
 
 .list-table th,
 .list-table td {
-    padding: 12px;
+    padding: 16px 24px;
     text-align: left;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
 }
 
 .list-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #495057;
+    background: var(--bg-tertiary);
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     position: sticky;
     top: 0;
     z-index: 10;
+    white-space: nowrap;
 }
 
-.list-table tr:hover {
-    background: #f8f9fa;
+.list-table tbody tr {
+    transition: background-color 0.15s;
+}
+
+.list-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.list-table tr:last-child td {
+    border-bottom: none;
 }
 
 .list-table .actions {
@@ -831,132 +861,157 @@ body {
     text-align: center;
 }
 
-.list-table .actions .btn {
-    margin: 0 2px;
-    padding: 4px 8px;
-    font-size: 12px;
-    min-width: 50px;
-    border: 1px solid transparent;
-    border-radius: 4px;
+.list-table .actions {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+.list-table .actions .action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: none;
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: all 0.2s;
+    font-size: 1rem;
+    text-decoration: none;
 }
 
-.list-table .actions .btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
+.list-table .actions .action-btn.edit-btn:hover:not(:disabled) {
+    background-color: var(--accent-primary);
     color: white;
+    transform: translateY(-1px);
 }
 
-.list-table .actions .btn-secondary:hover {
-    background-color: #545b62;
-    border-color: #4e555b;
-}
-
-.list-table .actions .btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
+.list-table .actions .action-btn.delete-btn:hover:not(:disabled) {
+    background-color: var(--danger);
     color: white;
+    transform: translateY(-1px);
 }
 
-.list-table .actions .btn-danger:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
+.list-table .actions .action-btn:disabled,
+.list-table .actions .action-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
-/* 类型和状态徽章 */
+/* 类型和状态徽章 - 现代化设计 */
 .type-badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 4px 12px;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 0.8rem;
     font-weight: 500;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .type-white {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .type-black {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .type-proxy {
-    background: #fff3cd;
-    color: #856404;
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .type-gray {
-    background: #e2e3e5;
-    color: #383d41;
+    background: rgba(156, 163, 175, 0.15);
+    color: var(--text-secondary);
+    border: 1px solid rgba(156, 163, 175, 0.3);
 }
 
 .category-badge {
     display: inline-block;
-    padding: 2px 6px;
-    background: #e7f3ff;
-    color: #0066cc;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: 4px 8px;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent-primary);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    font-size: 0.8rem;
     font-weight: 500;
 }
 
 .bool-badge {
     display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.8rem;
     font-weight: 500;
 }
 
 .bool-true {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .bool-false {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .empty-state,
 .error-state {
     text-align: center;
     padding: 60px 20px;
-    color: #6c757d;
+    color: var(--text-tertiary);
+    background: var(--card-bg);
+    border-radius: 16px;
+    margin: 24px 0;
 }
 
 .error-state {
-    color: #dc3545;
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .empty-state p,
 .error-state p {
     margin: 0;
-    font-size: 16px;
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .empty-state .text-muted {
-    font-size: 14px;
-    margin-top: 10px;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    color: var(--text-secondary);
 }
 
-/* 浮动表单样式 */
+/* 浮动表单样式 - 现代化设计 */
 .floating-form {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: white;
-    border-top: 1px solid #dee2e6;
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
     z-index: 1000;
     transition: transform 0.3s ease-in-out;
     max-height: 80vh;
     overflow: hidden;
+    border-radius: 16px 16px 0 0;
 }
 
 .floating-form.collapsed {
@@ -969,35 +1024,39 @@ body {
 
 .floating-form-header {
     height: 60px;
-    padding: 0 20px;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     user-select: none;
+    transition: background-color 0.2s;
 }
 
 .floating-form-header:hover {
-    background: #e9ecef;
+    background: var(--border-color);
 }
 
 .floating-form-title {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-weight: 600;
-    color: #495057;
+    color: var(--text-primary);
+    font-size: 1rem;
 }
 
 .floating-form-title i {
-    font-size: 16px;
-    color: #007bff;
+    font-size: 1.2rem;
+    color: var(--accent-primary);
 }
 
 .floating-form-toggle {
     transition: transform 0.3s ease;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
 }
 
 .floating-form.expanded .floating-form-toggle {
@@ -1005,88 +1064,100 @@ body {
 }
 
 .floating-form-content {
-    padding: 20px;
+    padding: 24px;
     max-height: calc(80vh - 60px);
     overflow-y: auto;
 }
 
 .floating-form-actions {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #dee2e6;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
 }
 
 .floating-form .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .floating-form .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: 500;
-    color: #495057;
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
 }
 
 .floating-form .form-control {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    transition: all 0.2s;
 }
 
 .floating-form .form-control:focus {
-    border-color: #80bdff;
+    border-color: var(--accent-primary);
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .floating-form .form-control:required {
-    border-left: 3px solid #007bff;
+    border-left: 4px solid var(--accent-primary);
 }
 
 .floating-form .btn {
-    padding: 8px 16px;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 12px;
     font-weight: 500;
-    text-align: center;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: none;
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: all 0.2s ease;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 2px 10px rgba(0,0,0,0.06), inset 0 -2px 0 rgba(0,0,0,0.1);
+}
+
+.floating-form .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.07), inset 0 -2px 0 rgba(0,0,0,0.12);
 }
 
 .floating-form .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: var(--accent-primary);
     color: white;
 }
 
-.floating-form .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+.floating-form .btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-hover);
 }
 
 .floating-form .btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: white;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
-.floating-form .btn-secondary:hover {
-    background-color: #545b62;
-    border-color: #545b62;
+.floating-form .btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
 }
 
-/* 浮动表单响应式设计 */
+/* 浮动表单响应式设计 - 现代化适配 */
 @media (max-width: 768px) {
     .floating-form {
         max-height: 90vh;
+        border-radius: 20px 20px 0 0;
     }
 
     .floating-form.collapsed {
@@ -1095,25 +1166,48 @@ body {
 
     .floating-form-header {
         height: 50px;
-        padding: 0 15px;
+        padding: 0 16px;
     }
 
     .floating-form-content {
-        padding: 15px;
+        padding: 16px;
         max-height: calc(90vh - 50px);
     }
 
     .floating-form-title {
-        font-size: 14px;
+        font-size: 0.9rem;
     }
 
     .floating-form-actions {
         flex-direction: column;
-        gap: 8px;
+        gap: 12px;
     }
 
     .floating-form .btn {
         width: 100%;
-        padding: 10px 16px;
+        padding: 12px 20px;
+    }
+
+    .whitelist-controls,
+    .blacklist-controls {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .control-group {
+        width: 100%;
+    }
+
+    .list-table th,
+    .list-table td {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+
+    .list-table .actions .action-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
     }
 }
