@@ -26,19 +26,19 @@ jobs:
       with:
         python-version: '3.x'
     
-    # 新增：清理缓存和重新安装依赖
+    # 清理缓存和重新安装依赖
     - name: Clear npm cache and reinstall dependencies
       run: |
         npm cache clean --force
         rm -rf node_modules package-lock.json
         npm install
         
-    # 新增：确保原生依赖正确安装
+    # 确保原生依赖正确安装
     - name: Install Parcel native dependencies
       run: |
         npm install @parcel/rust-linux-x64-gnu --save-dev --force
         
-    # 新增：验证依赖
+    # 验证依赖
     - name: Verify Parcel installation
       run: |
         npm list @parcel/rust-linux-x64-gnu || echo "Native module not found, will try alternative approach"
@@ -108,12 +108,73 @@ jobs:
         echo "ZIP file contents:"
         unzip -l "${{ steps.module_info.outputs.output_filename }}"
         
-    - name: Get file information
+    - name: Calculate file hashes and generate summary
+      id: file_info
       run: |
-        FILE_SIZE=$(stat -f%z "${{ steps.module_info.outputs.output_filename }}" 2>/dev/null || stat -c%s "${{ steps.module_info.outputs.output_filename }}")
+        FILENAME="${{ steps.module_info.outputs.output_filename }}"
+        
+        # 计算文件大小
+        FILE_SIZE=$(stat -f%z "$FILENAME" 2>/dev/null || stat -c%s "$FILENAME")
         FILE_SIZE_KB=$((FILE_SIZE / 1024))
-        echo "Package: ${{ steps.module_info.outputs.output_filename }}"
-        echo "File size: ${FILE_SIZE_KB} KB"
+        FILE_SIZE_MB=$((FILE_SIZE / 1024 / 1024))
+        
+        # 计算MD5和SHA256
+        if command -v md5sum >/dev/null 2>&1; then
+            MD5_HASH=$(md5sum "$FILENAME" | cut -d' ' -f1)
+        else
+            MD5_HASH=$(md5 -q "$FILENAME")
+        fi
+        
+        SHA256_HASH=$(sha256sum "$FILENAME" | cut -d' ' -f1)
+        
+        # 输出到GitHub输出变量
+        echo "file_size=$FILE_SIZE" >> $GITHUB_OUTPUT
+        echo "file_size_kb=$FILE_SIZE_KB" >> $GITHUB_OUTPUT
+        echo "file_size_mb=$FILE_SIZE_MB" >> $GITHUB_OUTPUT
+        echo "md5_hash=$MD5_HASH" >> $GITHUB_OUTPUT
+        echo "sha256_hash=$SHA256_HASH" >> $GITHUB_OUTPUT
+        
+        echo "Package: $FILENAME"
+        echo "File size: ${FILE_SIZE_KB} KB (${FILE_SIZE_MB} MB)"
+        echo "MD5: $MD5_HASH"
+        echo "SHA256: $SHA256_HASH"
+        
+    - name: Generate Build Summary
+      if: always()
+      run: |
+        cat << EOF >> $GITHUB_STEP_SUMMARY
+        # 📦 构建摘要 - KernelSU 模块打包
+        
+        ## 🔧 构建信息
+        | 项目 | 值 |
+        |------|-----|
+        | **模块 ID** | \`${{ steps.module_info.outputs.module_id }}\` |
+        | **构建时间戳** | \`${{ steps.module_info.outputs.timestamp }}\` |
+        | **文件名** | \`${{ steps.module_info.outputs.output_filename }}\` |
+        | **构建状态** | ${{ job.status == 'success' && '✅ 成功' || '❌ 失败' }} |
+        | **提交哈希** | \`${{ github.sha }}\` |
+        | **分支** | \`${{ github.ref_name }}\` |
+        
+        ## 📊 文件信息
+        | 属性 | 值 |
+        |------|-----|
+        | **文件大小** | ${{ steps.file_info.outputs.file_size_kb }} KB (${{ steps.file_info.outputs.file_size_mb }} MB) |
+        | **原始大小** | ${{ steps.file_info.outputs.file_size }} bytes |
+        
+        ## 🔐 文件校验和
+        | 算法 | 哈希值 |
+        |------|--------|
+        | **MD5** | \`${{ steps.file_info.outputs.md5_hash }}\` |
+        | **SHA256** | \`${{ steps.file_info.outputs.sha256_hash }}\` |
+        
+        ## 📁 ZIP 内容预览
+        \`\`\`
+        $(unzip -l "${{ steps.module_info.outputs.output_filename }}" | head -20)
+        \`\`\`
+        
+        ---
+        *构建于: $(date '+%Y-%m-%d %H:%M:%S UTC')*
+        EOF
         
     - name: Upload module package
       uses: actions/upload-artifact@v4
@@ -121,25 +182,3 @@ jobs:
         name: ${{ steps.module_info.outputs.module_id }}_${{ steps.module_info.outputs.timestamp }}
         path: ${{ steps.module_info.outputs.output_filename }}
         retention-days: 30
-        
-    - name: Upload build summary
-      if: always()
-      run: |
-        cat << EOF > build-summary.txt
-        Build Summary
-        =============
-        Module ID: ${{ steps.module_info.outputs.module_id }}
-        Timestamp: ${{ steps.module_info.outputs.timestamp }}
-        Package: ${{ steps.module_info.outputs.output_filename }}
-        Build Status: ${{ job.status }}
-        Commit: ${{ github.sha }}
-        Branch: ${{ github.ref_name }}
-        EOF
-        
-    - name: Upload build summary as artifact
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: build-summary
-        path: build-summary.txt
-        retention-days: 7
