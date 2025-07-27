@@ -1,0 +1,117 @@
+<!DOCTYPE html><html lang=zh-CN><meta charset=UTF-8><meta name=viewport content="width=device-width, initial-scale=1.0"><title>ColorOS墓碑配置编辑器</title><link rel=stylesheet href=WebUI-TombstoneEdit.79dba8a4.css><link rel=stylesheet href=WebUI-TombstoneEdit.84c8c532.css><body>
+    <div id=app>
+        
+        <header class=header>
+            <div class=header-content>
+                <h1 class=app-title>
+                    <span class=icon>⚙️</span>
+                    ColorOS墓碑配置编辑器
+                </h1>
+                <div class=header-actions>
+                    <button id=theme-toggle class=theme-toggle title=切换主题>
+                        <span class=theme-icon>🌙</span>
+                    </button>
+                    <button id=backup-btn class="btn btn-secondary">
+                        <span class=icon>💾</span>
+                        备份配置
+                    </button>
+                    <button id=restore-btn class="btn btn-secondary">
+                        <span class=icon>📁</span>
+                        恢复配置
+                    </button>
+                    <button id=save-btn class="btn btn-primary">
+                        <span class=icon>✅</span>
+                        保存配置
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        
+        <main class=main-content>
+            
+            <aside class=sidebar>
+                <div class=search-box>
+                    <input id=search-input placeholder=搜索配置项... class=search-input>
+                    <span class=search-icon>🔍</span>
+                </div>
+
+                <nav class=nav-menu>
+                    <ul class=nav-list>
+                        <li><a href=#basic class="active nav-link" data-section=basic>基础开关</a></li>
+                        <li><a href=#screen class=nav-link data-section=screen>屏幕状态策略</a></li>
+                        <li><a href=#freeze class=nav-link data-section=freeze>进程冻结规则</a></li>
+                        <li><a href=#proxy class=nav-link data-section=proxy>功耗代理机制</a></li>
+                        <li><a href=#memory class=nav-link data-section=memory>内存优化</a></li>
+                        <li><a href=#cpu class=nav-link data-section=cpu>CPU管控</a></li>
+                        <li><a href=#special class=nav-link data-section=special>特殊场景规则</a></li>
+                        <li><a href=#whitelist class=nav-link data-section=whitelist>白名单管理</a></li>
+                        <li><a href=#blacklist class=nav-link data-section=blacklist>黑名单管理</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            
+            <section class=content-area>
+                <div id=loading class=loading-overlay>
+                    <div class=loading-spinner></div>
+                    <p>正在加载配置文件...</p>
+                </div>
+
+                <div id=error-message class="error-message hidden">
+                    <div class=error-content>
+                        <span class=error-icon>❌</span>
+                        <div class=error-text>
+                            <h3>加载失败</h3>
+                            <p id=error-details>无法读取配置文件，请检查文件权限或路径是否正确。</p>
+                        </div>
+                        <button id=retry-btn class="btn btn-primary">重试</button>
+                    </div>
+                </div>
+
+                
+                <div id=config-container class="config-container hidden">
+                    
+                </div>
+            </section>
+        </main>
+
+        
+        <footer class=status-bar>
+            <div class=status-info>
+                <span id=file-status>配置文件: 未加载</span>
+                <span id=last-modified>最后修改: --</span>
+            </div>
+            <div class=status-actions>
+                <span id=unsaved-changes class="hidden unsaved-indicator">有未保存的更改</span>
+            </div>
+        </footer>
+    </div>
+
+    
+    <div id=modal-overlay class="hidden modal-overlay">
+        <div class=modal>
+            <div class=modal-header>
+                <h3 id=modal-title>确认操作</h3>
+                <button id=modal-close class=modal-close>×</button>
+            </div>
+            <div class=modal-body>
+                <p id=modal-message>确定要执行此操作吗？</p>
+            </div>
+            <div class=modal-footer>
+                <button id=modal-cancel class="btn btn-secondary">取消</button>
+                <button id=modal-confirm class="btn btn-primary">确认</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id=toast-container class=toast-container></div>
+
+    
+    <script type=module src=WebUI-TombstoneEdit.0826215b.js></script>
+
+
+
+
+
