@@ -1,5 +1,32 @@
 写的很烂，没做版本管理
 
+## 🚀 自动构建和发布
+
+本项目现已支持通过GitHub Actions自动构建和发布KernelSU模块！
+
+### 如何触发自动构建
+只需推送以`v`开头的标签即可触发自动构建：
+```bash
+# 创建新版本标签
+git tag v1.0.2 -m "Release version 1.0.2"
+# 推送标签到GitHub
+git push origin v1.0.2
+```
+
+### 自动构建流程
+1. ✅ 检出代码
+2. ✅ 设置Node.js环境
+3. ✅ 安装依赖项
+4. ✅ 构建WebUI资源
+5. ✅ 打包KernelSU模块
+6. ✅ 创建GitHub发布
+7. ✅ 上传模块文件
+
+### 构建产物
+- 📦 **KernelSU模块**: `模块ID_版本_时间戳.zip`
+- 📋 **GitHub发布**: 包含安装说明和更新日志
+- 🔗 **下载链接**: 直接从Releases页面下载
+
 # ColorOS墓碑配置编辑器
 
 一个基于KernelSU模块的WebUI工具，用于编辑ColorOS系统的墓碑配置文件，支持XML解析、文件读写、配置验证和备份恢复等功能。
@@ -146,11 +173,26 @@
 
 ## 开发信息
 
+## 开发信息
+
 ### 技术栈
 - **前端**：HTML5 + CSS3 + ES6 JavaScript
+- **构建工具**：Parcel + npm
+- **CI/CD**：GitHub Actions
 - **架构**：模块化设计，组件化开发
 - **API**：KernelSU JavaScript API
 - **样式**：CSS变量 + Flexbox布局
+
+### 开发流程
+1. **本地开发**：`npm run dev` - 启动开发服务器
+2. **构建测试**：`npm run build` - 构建WebUI资源
+3. **版本发布**：创建v标签推送触发自动构建
+4. **模块测试**：从Releases下载zip文件在KernelSU中测试
+
+### 构建配置
+- **kernelsu依赖**：使用构建时存根替换运行时API
+- **资源优化**：无源码映射，相对路径，缓存禁用
+- **模块打包**：自动包含所有必需文件和元数据
 
 ### 项目结构
 ```
