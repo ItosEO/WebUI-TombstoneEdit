@@ -1,106 +1,98 @@
-#requires -Version 5.0
-<#######################################################################
-  ColorOS Tombstone Editor – Module Build Script (Windows PowerShell)
-  作用：
-  1. 安装/更新 npm 依赖（如有必要）
-  2. 执行 `npm run build`（使用 Parcel 将前端资源编译到 module/webroot）
-  3. 将 module 目录打包成 zip（文件名自动包含版本号与时间戳）
-  4. 输出结果路径，方便直接上传/安装到 KernelSU
-#######################################################################>
-
+# KernelSU模块构建脚本
 param(
-    [string]$ModuleDir = "module",            # 模块根目录
-    [string]$OutputDir = "dist"               # zip 输出目录
+    [string]$ModuleDir = "module",
+    [string]$OutputDir = "dist"
 )
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
+Write-Host "[INFO] 开始构建KernelSU模块..." -ForegroundColor Cyan
 
-function Write-Info($msg)  { Write-Host "[INFO]  $msg"  -ForegroundColor Cyan }
-function Write-Warn($msg)  { Write-Host "[WARN]  $msg"  -ForegroundColor Yellow }
-function Write-ErrorAndExit($msg) {
-    Write-Host "[ERROR] $msg" -ForegroundColor Red
-    exit 1
-}
+# 执行npm构建
+Write-Host "[INFO] 执行 npm run build..." -ForegroundColor Cyan
+npm run build
 
-# 检查目录结构
-if (-not (Test-Path $ModuleDir)) {
-    Write-ErrorAndExit "未找到模块目录 '$ModuleDir'，请在仓库根目录运行本脚本。"
-}
-if (-not (Test-Path "package.json")) {
-    Write-ErrorAndExit "未找到 package.json，无法执行构建。"
-}
-
-# 安装 npm 依赖（若 node_modules 不存在或 package.json 新增依赖）
-if (-not (Test-Path "node_modules")) {
-    Write-Info "首次运行或缺少 node_modules，开始安装依赖…"
-    npm install --no-audit --no-fund | Out-Null
-} else {
-    Write-Info "检测依赖更新…"
-    npm install --no-audit --no-fund --prefer-offline | Out-Null
-}
-
-# 执行 Parcel 构建（将缓存目录固定在当前项目，避免跨盘 EXDEV）
-Write-Info "执行 npm run build (Parcel)…"
-$env:PARCEL_CACHE_DIR = (Join-Path (Get-Location) ".parcel-cache")
-try {
-    npm run build --silent
-} catch {
-    Write-ErrorAndExit "构建失败，请检查上方错误日志。"
-}
-
-# 生成输出文件名：<moduleId>_v<version>_<timestamp>.zip
-$json = Get-Content package.json -Raw | ConvertFrom-Json
-$version = $json.version
-$moduleProp = Get-Content "$ModuleDir/module.prop" -ErrorAction SilentlyContinue
-$moduleId = ($moduleProp | Select-String '^id=').ToString().Split('=')[1]
-if (-not $moduleId) { $moduleId = "module" }
-
+# 获取模块信息
+$moduleProp = Get-Content "$ModuleDir/module.prop"
+$moduleId = ($moduleProp | Where-Object { $_ -match '^id=' }).Split('=')[1]
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $outputFileName = "${moduleId}_${timestamp}.zip"
 
 # 创建输出目录
-if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir | Out-Null }
+if (-not (Test-Path $OutputDir)) {
+    New-Item -ItemType Directory -Path $OutputDir | Out-Null
+}
 $outputPath = Join-Path $OutputDir $outputFileName
 
-# -------------- 使用临时目录保留结构并排除源码 --------------
-$tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "tombstone_build_$timestamp"
-if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+Write-Host "[INFO] 创建ZIP文件: $outputPath" -ForegroundColor Cyan
 
-Write-Info "复制模块到临时目录：$tempDir"
-# 创建临时模块目录并逐项复制文件
-New-Item -ItemType Directory -Path "$tempDir" -Force | Out-Null
-
-# 复制 module.prop 和 customize.sh
-Copy-Item -Path "$ModuleDir\module.prop" -Destination "$tempDir\" -Force
-Copy-Item -Path "$ModuleDir\customize.sh" -Destination "$tempDir\" -Force
-
-# 复制 META-INF 目录（如果存在）
-if (Test-Path "$ModuleDir\META-INF") {
-    Copy-Item -Path "$ModuleDir\META-INF" -Destination "$tempDir\" -Recurse -Force
-}
-
-# 创建 webroot 目录
-New-Item -ItemType Directory -Path "$tempDir\webroot" -Force | Out-Null
-
-# 仅复制 webroot 根目录编译后的文件，不包括源码目录
-Copy-Item -Path "$ModuleDir\webroot\*.html" -Destination "$tempDir\webroot\" -Force
-Copy-Item -Path "$ModuleDir\webroot\*.css" -Destination "$tempDir\webroot\" -Force
-Copy-Item -Path "$ModuleDir\webroot\*.js" -Destination "$tempDir\webroot\" -Force
-
-# 复制其他资源目录（如 images、fonts 等，但排除源码目录 js 和 styles）
-$assetDirs = Get-ChildItem -Path "$ModuleDir\webroot" -Directory | Where-Object { $_.Name -notin @('js','styles') }
-foreach ($dir in $assetDirs) {
-    Copy-Item -Path $dir.FullName -Destination "$tempDir\webroot\" -Recurse -Force
-    Write-Info "复制资源目录: $($dir.Name)"
-}
-
-# -------------- 压缩 --------------
-Write-Info "开始压缩 → $outputPath …"
+# 删除旧文件
 if (Test-Path $outputPath) { Remove-Item $outputPath }
-Compress-Archive -Path "$tempDir\*" -DestinationPath $outputPath -CompressionLevel Optimal
 
-# 清理临时目录
-Remove-Item $tempDir -Recurse -Force
+# 进入模块目录并创建ZIP（打包目录内容而不是目录本身）
+Push-Location $ModuleDir
 
-Write-Info "打包完成！生成文件: $outputPath" 
+# 创建ZIP文件，使用 * 来打包目录内的所有内容，而不是目录本身
+Compress-Archive -Path "*" -DestinationPath "..\$outputPath" -CompressionLevel Optimal
+
+Pop-Location
+
+# 现在使用Python脚本修复ZIP文件中的路径分隔符
+$pythonScript = @"
+import zipfile
+import os
+import tempfile
+import shutil
+
+def fix_zip_paths(zip_path):
+    # 创建临时目录
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_zip = os.path.join(temp_dir, 'temp.zip')
+
+        # 读取原ZIP文件并创建新的ZIP文件
+        with zipfile.ZipFile(zip_path, 'r') as old_zip:
+            with zipfile.ZipFile(temp_zip, 'w', zipfile.ZIP_DEFLATED) as new_zip:
+                for item in old_zip.infolist():
+                    # 将反斜杠替换为正斜杠
+                    new_name = item.filename.replace('\\', '/')
+
+                    # 读取文件内容
+                    data = old_zip.read(item.filename)
+
+                    # 写入新ZIP文件，使用修正的路径
+                    new_zip.writestr(new_name, data)
+
+        # 替换原文件
+        shutil.move(temp_zip, zip_path)
+        print(f"已修复ZIP文件路径分隔符: {zip_path}")
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:
+        fix_zip_paths(sys.argv[1])
+"@
+
+# 将Python脚本写入临时文件
+$tempPyScript = Join-Path $env:TEMP "fix_zip_paths.py"
+$pythonScript | Out-File -FilePath $tempPyScript -Encoding UTF8
+
+# 运行Python脚本修复路径
+Write-Host "[INFO] 修复ZIP文件路径分隔符..." -ForegroundColor Cyan
+python $tempPyScript $outputPath
+
+# 清理临时文件
+Remove-Item $tempPyScript -Force
+
+Write-Host "[INFO] 打包完成: $outputPath" -ForegroundColor Green
+$fileSize = (Get-Item $outputPath).Length
+Write-Host "[INFO] 文件大小: $([math]::Round($fileSize/1KB, 2)) KB" -ForegroundColor Green
+
+# 验证ZIP内容
+Write-Host "[INFO] ZIP文件内容:" -ForegroundColor Cyan
+$tempExtract = "temp_verify"
+Expand-Archive -Path $outputPath -DestinationPath $tempExtract -Force
+Get-ChildItem -Path $tempExtract -Recurse | ForEach-Object {
+    $relativePath = $_.FullName.Replace("$PWD\$tempExtract\", "").Replace('\', '/')
+    Write-Host "  $relativePath" -ForegroundColor Gray
+}
+Remove-Item $tempExtract -Recurse -Force
+
+Write-Host "[SUCCESS] Module build completed!" -ForegroundColor Green
