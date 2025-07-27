@@ -1,0 +1,145 @@
+name: Build and Package KernelSU Module
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    # 新增：清理缓存和重新安装依赖
+    - name: Clear npm cache and reinstall dependencies
+      run: |
+        npm cache clean --force
+        rm -rf node_modules package-lock.json
+        npm install
+        
+    # 新增：确保原生依赖正确安装
+    - name: Install Parcel native dependencies
+      run: |
+        npm install @parcel/rust-linux-x64-gnu --save-dev --force
+        
+    # 新增：验证依赖
+    - name: Verify Parcel installation
+      run: |
+        npm list @parcel/rust-linux-x64-gnu || echo "Native module not found, will try alternative approach"
+        
+    - name: Build WebUI
+      run: |
+        # 如果原生模块仍然有问题，使用 --no-cache 和环境变量
+        export PARCEL_WORKERS=1
+        npm run build || npm run build -- --no-cache
+      
+    - name: Get module information
+      id: module_info
+      run: |
+        MODULE_ID=$(grep '^id=' module/module.prop | cut -d'=' -f2)
+        TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+        OUTPUT_FILENAME="${MODULE_ID}_${TIMESTAMP}.zip"
+        echo "module_id=$MODULE_ID" >> $GITHUB_OUTPUT
+        echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+        echo "output_filename=$OUTPUT_FILENAME" >> $GITHUB_OUTPUT
+        
+    - name: Create module package
+      run: |
+        cd module
+        zip -r "../${{ steps.module_info.outputs.output_filename }}" .
+        cd ..
+        
+    - name: Fix ZIP path separators
+      run: |
+        cat << 'EOF' > fix_zip_paths.py
+        import zipfile
+        import os
+        import tempfile
+        import shutil
+        import sys
+
+        def fix_zip_paths(zip_path):
+            # Create temporary directory
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_zip = os.path.join(temp_dir, 'temp.zip')
+
+                # Read original ZIP and create new ZIP with fixed paths
+                with zipfile.ZipFile(zip_path, 'r') as old_zip:
+                    with zipfile.ZipFile(temp_zip, 'w', zipfile.ZIP_DEFLATED) as new_zip:
+                        for item in old_zip.infolist():
+                            # Replace backslashes with forward slashes
+                            new_name = item.filename.replace('\\', '/')
+
+                            # Get file content
+                            data = old_zip.read(item.filename)
+
+                            # Write to new ZIP with corrected path
+                            new_zip.writestr(new_name, data)
+
+                # Replace original file
+                shutil.move(temp_zip, zip_path)
+                print(f"Fixed ZIP file path separators: {zip_path}")
+
+        if __name__ == "__main__":
+            if len(sys.argv) > 1:
+                fix_zip_paths(sys.argv[1])
+        EOF
+        
+        python fix_zip_paths.py "${{ steps.module_info.outputs.output_filename }}"
+        
+    - name: Verify ZIP contents
+      run: |
+        echo "ZIP file contents:"
+        unzip -l "${{ steps.module_info.outputs.output_filename }}"
+        
+    - name: Get file information
+      run: |
+        FILE_SIZE=$(stat -f%z "${{ steps.module_info.outputs.output_filename }}" 2>/dev/null || stat -c%s "${{ steps.module_info.outputs.output_filename }}")
+        FILE_SIZE_KB=$((FILE_SIZE / 1024))
+        echo "Package: ${{ steps.module_info.outputs.output_filename }}"
+        echo "File size: ${FILE_SIZE_KB} KB"
+        
+    - name: Upload module package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.module_info.outputs.module_id }}_${{ steps.module_info.outputs.timestamp }}
+        path: ${{ steps.module_info.outputs.output_filename }}
+        retention-days: 30
+        
+    - name: Upload build summary
+      if: always()
+      run: |
+        cat << EOF > build-summary.txt
+        Build Summary
+        =============
+        Module ID: ${{ steps.module_info.outputs.module_id }}
+        Timestamp: ${{ steps.module_info.outputs.timestamp }}
+        Package: ${{ steps.module_info.outputs.output_filename }}
+        Build Status: ${{ job.status }}
+        Commit: ${{ github.sha }}
+        Branch: ${{ github.ref_name }}
+        EOF
+        
+    - name: Upload build summary as artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: build-summary
+        path: build-summary.txt
+        retention-days: 7
