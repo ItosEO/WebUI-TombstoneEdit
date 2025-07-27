@@ -1,3 +1,6 @@
 node_modules/
 dist/
 .parcel-cache/
+*.zip
+build-summary.txt
+fix_zip_paths.py
