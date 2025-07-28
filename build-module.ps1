@@ -6,6 +6,26 @@ param(
 
 Write-Host "[INFO] 开始构建KernelSU模块..." -ForegroundColor Cyan
 
+# 清理缓存和输出目录
+Write-Host "[INFO] 清理构建缓存和输出目录..." -ForegroundColor Yellow
+
+# 清理 Parcel 缓存目录
+$parcelCacheDir = ".parcel-cache"
+if (Test-Path $parcelCacheDir) {
+    Write-Host "[INFO] 删除 Parcel 缓存目录: $parcelCacheDir" -ForegroundColor Yellow
+    Remove-Item $parcelCacheDir -Recurse -Force
+}
+
+# 清理模块输出目录
+$webrootDir = Join-Path $ModuleDir "webroot"
+if (Test-Path $webrootDir) {
+    Write-Host "[INFO] 清理模块输出目录: $webrootDir" -ForegroundColor Yellow
+    # 删除目录中的所有文件和子目录，但保留目录本身
+    Get-ChildItem -Path $webrootDir -Recurse | Remove-Item -Force -Recurse
+}
+
+Write-Host "[INFO] 清理完成" -ForegroundColor Green
+
 # 执行npm构建
 Write-Host "[INFO] 执行 npm run build..." -ForegroundColor Cyan
 npm run build
