@@ -128,7 +128,6 @@ export class FileManager {
 
             // 设置文件权限
             await exec(`chmod 644 "${this.configPath}"`);
-            await exec(`chown system:system "${this.configPath}"`);
 
             // 清理临时文件
             await exec(`rm -f "${tempFile}"`);
